@@ -9,33 +9,59 @@
     if (isset($_REQUEST['delete_id'])) {
         $id = $_REQUEST['delete_id'];
 
-        $select_stmt = $conn->prepare('SELECT * FROM customers WHERE id = :id');
+        $select_stmt = $conn->prepare('SELECT * FROM products WHERE id = :id');
         $select_stmt->bindParam(':id', $id);
         $select_stmt->execute();
         $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+        unlink("upload/".$row['image']);
         
-        $delete_stmt = $conn->prepare('DELETE FROM customers WHERE id = :id');
+        $delete_stmt = $conn->prepare('DELETE FROM products WHERE id = :id');
         $delete_stmt->bindParam(':id', $id);
         $delete_stmt->execute();
 
-        header("location: employee_manageCus.php");
+        header("location: employee_product.php");
     }
     
     if (isset($_POST['addproduct'])) {
         $name = $_POST['name'];
         $description = $_POST['description'];
+        $type = $_POST['type'];
         $price = $_POST['price'];
         $amount = 0;
         $status = "ไม่พร้อมขาย";
+
+        $image_file = $_FILES['file']['name'];
+        $itype = $_FILES['file']['type'];
+        $size = $_FILES['file']['size'];
+        $temp = $_FILES['file']['tmp_name'];
+
+        $path = "upload/" . $image_file;  //set upload folder path
+
+        if ($itype == "image/jpg" || $itype == "image/jpeg" || $itype == "image/png" || $itype == "image/gif") {
+            if (!file_exists($path)) {  // check file not exist in your upload folder path
+                if ($size < 5000000) {  // check file size
+                    move_uploaded_file($temp, 'upload/'.$image_file); //move upload file temperary to upload folder
+                } else {
+                    $errorMsg = "Your file too large.";
+                }
+            } else {
+                $errorMsg = "File already exists.";
+            }
+        } else {
+            $errorMsg = "Upload JPG, JPEG, PNG and GIF file formate.";
+        }
+
         
         try {
-            $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status) 
-            VALUES(:name, :description, :price, :amount, :status)");
+            $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type) 
+            VALUES(:name, :description, :price, :amount, :status, :image, :type)");
             $stmt->bindParam(":name", $name);
             $stmt->bindParam(":description", $description);
             $stmt->bindParam(":price", $price);
             $stmt->bindParam(":amount", $amount);
             $stmt->bindParam(":status", $status);
+            $stmt->bindParam(":type", $type);
+            $stmt->bindParam(":image", $image_file);
             $stmt->execute();
             $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
             header("location: employee_product.php");                
@@ -43,6 +69,34 @@
         } catch (PDOException $e) {
                 echo $e->getMessage();
         }
+    }
+
+    if (isset($_POST['addstock'])) {
+        $id = $_POST['id'];
+        $amount = $_POST['amount'];
+        
+        $select_stmt = $conn->prepare('SELECT * FROM products WHERE id = :id');
+        $select_stmt->bindParam(':id', $id);
+        $select_stmt->execute();
+        $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $name = $row['name'];
+        $stmt = $conn->prepare("INSERT INTO stockpd(name, amount) 
+        VALUES(:name, :amount)");
+        $stmt->bindParam(":name", $name);
+        $stmt->bindParam(":amount", $amount);
+        $stmt->execute();
+
+        $amount = ($_POST['amount'] + $row['amount']);
+        $status = "พร้อมขาย";
+
+        $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE id = :id");
+        $up_stmt->bindParam(":amount", $amount);
+        $up_stmt->bindParam(":status", $status);
+        $up_stmt->bindParam(":id", $id);
+        $up_stmt->execute();
+        header("location: employee_product.php"); 
+
     }
 ?>
 
@@ -280,7 +334,7 @@
 
                             <!-- Modal body -->
                             <div class="modal-body">
-                                <form action="admin_add_product.php" method="POST">
+                                <form action="" method="POST" class="form-horizontal" enctype="multipart/form-data">
                                     <?php if (isset($_SESSION['error'])) { ?>
                                         <div class="alert alert-danger" role="alert">
                                             <?php
@@ -321,70 +375,11 @@
                                         <label for="price" class="form-label">ราคา</label>
                                         <input type="text" class="form-control" name="price" aria-describebdy="price">
                                     </div>
-                                    <!-- Modal footer -->
-                                    <div class="modal-footer">
-                                        <input type="submit" name="addproduct" class="btn btn-success" value="เพิ่มข้อมูล">
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">ปิด</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- The Modal เพิ่มข้อมูล -->
-                <div class="modal" id="addModal">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-
-                            <!-- Modal Header -->
-                            <div class="modal-header">
-                                <h4 class="modal-title">เพิ่มข้อมูลสินค้า</h4>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-
-                            <!-- Modal body -->
-                            <div class="modal-body">
-                                <form action="admin_add_product.php" method="POST">
-                                    <?php if (isset($_SESSION['error'])) { ?>
-                                        <div class="alert alert-danger" role="alert">
-                                            <?php
-                                            echo $_SESSION['error'];
-                                            unset($_SESSION['error']);
-                                            ?>
+                                    <div>
+                                        <label for="file" class="form-label">รูปภาพ</label>
+                                        <div>
+                                            <input type="file" name="file" class="form-control">
                                         </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['success'])) { ?>
-                                        <div class="alert alert-success" role="alert">
-                                            <?php
-                                            echo $_SESSION['success'];
-                                            unset($_SESSION['success']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['warning'])) { ?>
-                                        <div class="alert alert-warning" role="alert">
-                                            <?php
-                                            echo $_SESSION['warning'];
-                                            unset($_SESSION['warning']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <div class="mb-3">
-                                        <label for="name" class="form-label">ชื่อสินค้า</label>
-                                        <input type="text" class="form-control" name="name" aria-describebdy="name">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">คำอธิบาย</label>
-                                        <input type="text" class="form-control" name="description" aria-describebdy="description">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="type" class="form-label">ประเภท</label>
-                                        <input type="text" class="form-control" name="type" aria-describebdy="type">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="price" class="form-label">ราคา</label>
-                                        <input type="text" class="form-control" name="price" aria-describebdy="price">
                                     </div>
                                     <!-- Modal footer -->
                                     <div class="modal-footer">
@@ -410,7 +405,7 @@
 
                             <!-- Modal body -->
                             <div class="modal-body">
-                                <form action="admin_add_stock.php" method="POST">
+                                <form action="" method="POST">
                                     <?php if (isset($_SESSION['error'])) { ?>
                                         <div class="alert alert-danger" role="alert">
                                             <?php
@@ -477,6 +472,7 @@
                                             <thead>
                                                 <tr>
                                                     <th scope="col" style="text-align: center">ID</th>
+                                                    <th scope="col" style="text-align: center"></th>
                                                     <th scope="col" style="text-align: center">ชื่อสินค้า</th>
                                                     <th scope="col" style="text-align: center">คำอธิบาย</th>
                                                     <th scope="col" style="text-align: center">ประเภท</th>
@@ -495,12 +491,19 @@
                                                     <form action="" method="POST">
                                                         <tr>
                                                             <th scope="row"><?php echo $row['id']; ?></th>
+                                                            <td style="text-align: center"><img src="upload/<?php echo $row['image']; ?>" width="100px" height="100px" alt=""></td>
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['description']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['type']; ?></td>
                                                             <td style="text-align: center"><?php echo number_format($row['price']); ?></td>
                                                             <td style="text-align: center"><?php echo $row['amount']; ?></td>
-                                                            <td style="text-align: center"><?php echo $row['status']; ?></td>
+                                                            <td style="text-align: center;color:<?php 
+                                                                if ($row['status'] == "พร้อมขาย") {
+                                                                    echo "green";
+                                                                } else {
+                                                                    echo "red";
+                                                                }
+                                                            ?>"><?php echo $row['status']; ?></td>
                                                             <td><a href="employee_edit_product.php?update_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">Edit</a></td>
                                                             <td><a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
                                                         </tr>

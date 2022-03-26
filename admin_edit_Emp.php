@@ -13,6 +13,7 @@ if (isset($_REQUEST['update_id'])) {
         $select_stmt->bindParam(':id', $id);
         $select_stmt->execute();
         $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+        extract($row);
     } catch (PDOException $e) {
         $e->getMessage();
     }
@@ -28,8 +29,34 @@ if (isset($_REQUEST['btn_update'])) {
         $email = $_REQUEST['email'];
         $birthday = $_REQUEST['birthday'];
         $urole = $_REQUEST['urole'];
+        $image_file = $_FILES['file']['name'];
+        $type = $_FILES['file']['type'];
+        $size = $_FILES['file']['size'];
+        $temp = $_FILES['file']['tmp_name'];
 
-        $update_stmt = $conn->prepare("UPDATE users SET username = :username, firstname = :firstname, lastname = :lastname, address = :address, phone = :phone, email = :email, birthday = :birthday, urole = :urole WHERE id = :id");
+        $path = "upload/" . $image_file;  //set upload folder path
+        $direc = "upload/";
+
+        if ($image_file) {
+            if ($type == "image/jpg" || $type == "image/jpeg" || $type == "image/png" || $type == "image/gif") {
+                if (!file_exists($path)) {  // check file not exist in your upload folder path
+                    if ($size < 5000000) {  // check file size
+                        unlink($direc.$row['image']);
+                        move_uploaded_file($temp, 'upload/'.$image_file); //move upload file temperary to upload folder
+                    } else {
+                        $errorMsg = "Your file too large.";
+                    }
+                } else {
+                    $errorMsg = "File already exists.";
+                }
+            } else {
+                $errorMsg = "Upload JPG, JPEG, PNG and GIF file formate.";
+            }
+        } else {
+            $image_file = $row['image'];
+        }
+
+        $update_stmt = $conn->prepare("UPDATE users SET username = :username, firstname = :firstname, lastname = :lastname, address = :address, phone = :phone, email = :email, birthday = :birthday, urole = :urole, image = :fimage WHERE id = :id");
         $update_stmt->bindParam(':username', $username);
         $update_stmt->bindParam(':firstname', $firstname);
         $update_stmt->bindParam(':lastname', $lastname);
@@ -38,6 +65,7 @@ if (isset($_REQUEST['btn_update'])) {
         $update_stmt->bindParam(':email', $email);
         $update_stmt->bindParam(':birthday', $birthday);
         $update_stmt->bindParam(':urole', $urole);
+        $update_stmt->bindParam(':fimage', $image_file);        
         $update_stmt->bindParam(':id', $id);
         $update_stmt->execute();
 
@@ -257,7 +285,7 @@ if (isset($_REQUEST['btn_update'])) {
                 <div class="container">
                     <br>
                     <tbody>
-                        <form action="" method="POST">
+                        <form action="" method="POST" class="form-horizontal" enctype="multipart/form-data">
                             <?php
                             $id = $_REQUEST['update_id'];
                             $select_stmt = $conn->prepare('SELECT * FROM users WHERE id = :id');
@@ -303,6 +331,15 @@ if (isset($_REQUEST['btn_update'])) {
                                         <option value="Admin">Admin</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label for="file" class="form-label">รูปภาพ</label>
+                                    <div>
+                                        <input type="file" name="file" class="form-control" value="<?php echo $row['image']; ?>">
+                                        <br>
+                                        <p><img src="upload/<?php echo $image; ?>" height="100px" width="100px" alt=""></p>
+                                    </div>
+                                </div>
+                                <br>                               
                                 <div>
                                     <input type="submit" name="btn_update" class="btn btn-success" value="แก้ไขข้อมูล">
                                     <a href="admin_manageEmp.php" class="btn btn-danger">ยกเลิก</a>

@@ -13,6 +13,7 @@
         $select_stmt->bindParam(':id', $id);
         $select_stmt->execute();
         $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+        unlink("upload/".$row['image']);
         
         $delete_stmt = $conn->prepare('DELETE FROM users WHERE id = :id');
         $delete_stmt->bindParam(':id', $id);
@@ -20,6 +21,8 @@
 
         header("location: admin_manageEmp.php");
     }
+
+
     
 ?>
 
@@ -234,11 +237,11 @@
                 </nav>
                 <!-- End of Topbar -->
 
+
                 <!-- The Modal เพิ่มข้อมูล -->
                 <div class="modal" id="addModal">
                     <div class="modal-dialog">
                         <div class="modal-content">
-
                             <!-- Modal Header -->
                             <div class="modal-header">
                                 <h4 class="modal-title">เพิ่มข้อมูลพนักงาน</h4>
@@ -247,7 +250,7 @@
 
                             <!-- Modal body -->
                             <div class="modal-body">
-                                <form action="admin_add_Emp.php" method="POST">
+                                <form action="admin_add_Emp.php" method="POST" class="form-horizontal" enctype="multipart/form-data">
                                     <?php if (isset($_SESSION['error'])) { ?>
                                         <div class="alert alert-danger" role="alert">
                                             <?php
@@ -308,97 +311,11 @@
                                             <option value="Admin">แอดมิน</option>
                                         </select>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="password" class="form-label">รหัสผ่าน</label>
-                                        <input type="password" class="form-control" name="password" aria-describebdy="password">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="c_password" class="form-label">ยืนยันรหัสผ่าน</label>
-                                        <input type="password" class="form-control" name="c_password" aria-describebdy="c_password">
-                                    </div>
-                                    <!-- Modal footer -->
-                                    <div class="modal-footer">
-                                        <input type="submit" name="adduser" class="btn btn-success" value="เพิ่มข้อมูล">
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">ปิด</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- The Modal เพิ่มข้อมูล -->
-                <div class="modal" id="addModal">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <!-- Modal Header -->
-                            <div class="modal-header">
-                                <h4 class="modal-title">เพิ่มข้อมูลพนักงาน</h4>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-
-                            <!-- Modal body -->
-                            <div class="modal-body">
-                                <form action="admin_add_user.php" method="POST">
-                                    <?php if (isset($_SESSION['error'])) { ?>
-                                        <div class="alert alert-danger" role="alert">
-                                            <?php
-                                            echo $_SESSION['error'];
-                                            unset($_SESSION['error']);
-                                            ?>
+                                    <div>
+                                        <label for="file" class="form-label">รูปภาพ</label>
+                                        <div>
+                                            <input type="file" name="file" class="form-control">
                                         </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['success'])) { ?>
-                                        <div class="alert alert-success" role="alert">
-                                            <?php
-                                            echo $_SESSION['success'];
-                                            unset($_SESSION['success']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['warning'])) { ?>
-                                        <div class="alert alert-warning" role="alert">
-                                            <?php
-                                            echo $_SESSION['warning'];
-                                            unset($_SESSION['warning']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <div class="mb-3">
-                                        <label for="username" class="form-label">Username</label>
-                                        <input type="text" class="form-control" name="username" aria-describebdy="username">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="firstname" class="form-label">ชื่อ</label>
-                                        <input type="text" class="form-control" name="firstname" aria-describebdy="firstname">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="lastname" class="form-label">นามสกุล</label>
-                                        <input type="text" class="form-control" name="lastname" aria-describebdy="lastname">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="address" class="form-label">ที่อยู่</label>
-                                        <input type="text" class="form-control" name="address" aria-describebdy="address">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="phone" class="form-label">เบอร์โทรศัพท์</label>
-                                        <input type="text" class="form-control" name="phone" aria-describebdy="phone">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="email" class="form-label">อีเมล</label>
-                                        <input type="text" class="form-control" name="email" aria-describebdy="email">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="birthday" class="form-label">วันเกิด</label>
-                                        <input type="date" class="form-control" name="birthday" aria-describebdy="birthday">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="urole" class="form-label">ระดับสมาชิก</label>
-                                        <br>
-                                        <select name="urole">
-                                            <option value="Employee">พนักงาน</option>
-                                            <option value="Admin">แอดมิน</option>
-                                        </select>
                                     </div>
                                     <div class="mb-3">
                                         <label for="password" class="form-label">รหัสผ่าน</label>
@@ -439,6 +356,7 @@
                                             <thead>
                                                 <tr>
                                                     <th scope="col" style="text-align: center">ID</th>
+                                                    <th scope="col" style="text-align: center"></th>
                                                     <th scope="col" style="text-align: center">Username</th>
                                                     <th scope="col" style="text-align: center">ชื่อ</th>
                                                     <th scope="col" style="text-align: center">นามสกุล</th>
@@ -459,6 +377,7 @@
                                                     <form action="" method="POST">
                                                         <tr>
                                                             <th scope="row" style="text-align: center"><?php echo $row['id']; ?></th>
+                                                            <td style="text-align: center"><img src="upload/<?php echo $row['image']; ?>" width="100px" height="100px" alt=""></td>
                                                             <td style="text-align: center"><?php echo $row['username']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['firstname']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['lastname']; ?></td>

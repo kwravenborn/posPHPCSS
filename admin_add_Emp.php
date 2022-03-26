@@ -17,6 +17,28 @@
         $password = MD5($_POST['password']);
         $c_password = MD5($_POST['password']);
         $urole = $_POST['urole'];
+        $image_file = $_FILES['file']['name'];
+        $type = $_FILES['file']['type'];
+        $size = $_FILES['file']['size'];
+        $temp = $_FILES['file']['tmp_name'];
+
+        $path = "upload/" . $image_file;  //set upload folder path
+
+        if ($type == "image/jpg" || $type == "image/jpeg" || $type == "image/png" || $type == "image/gif") {
+            if (!file_exists($path)) {  // check file not exist in your upload folder path
+                if ($size < 5000000) {  // check file size
+                    move_uploaded_file($temp, 'upload/'.$image_file); //move upload file temperary to upload folder
+                } else {
+                    $errorMsg = "Your file too large.";
+                }
+            } else {
+                $errorMsg = "File already exists.";
+            }
+        } else {
+            $errorMsg = "Upload JPG, JPEG, PNG and GIF file formate.";
+        }
+
+
         
         if (empty($username)) {
             $_SESSION['error'] = 'กรุณากรอก username';
@@ -57,6 +79,9 @@
         } else if ($password != $c_password) {
             $_SESSION['error'] = 'รหัสผ่านไม่ตรงกัน';
             header("location: admin_manageEmp.php");
+        } else if (empty($image_file)) {
+            $_SESSION['error'] = 'กรุณาอัพโหลดรูปภาพ';
+            header("location: admin_manageEmp.php");
         } else {
             try {
 
@@ -69,8 +94,8 @@
                     $_SESSION['warning'] = 'มี username นี้อยู่ในระบบแล้ว';
                     header("location: admin_manageEmp.php");
                 } else if (!isset($_SESSION['error'])) {
-                    $stmt = $conn->prepare("INSERT INTO users(username, firstname, lastname, address, phone, email, birthday, password , urole) 
-                    VALUES(:username, :firstname, :lastname, :address, :phone, :email, :birthday, :password, :urole)");
+                    $stmt = $conn->prepare("INSERT INTO users(username, firstname, lastname, address, phone, email, birthday, password , urole, image) 
+                    VALUES(:username, :firstname, :lastname, :address, :phone, :email, :birthday, :password, :urole, :image)");
                     $stmt->bindParam(":username", $username);
                     $stmt->bindParam(":firstname", $firstname);
                     $stmt->bindParam(":lastname", $lastname);
@@ -80,6 +105,7 @@
                     $stmt->bindParam(":birthday", $birthday);
                     $stmt->bindParam(":password", $password);
                     $stmt->bindParam(":urole", $urole);
+                    $stmt->bindParam(":image", $image_file);
                     $stmt->execute();
                     $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
                     header("location: admin_manageEmp.php");

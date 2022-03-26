@@ -13,6 +13,7 @@ if (isset($_REQUEST['delete_id'])) {
     $select_stmt->bindParam(':id', $id);
     $select_stmt->execute();
     $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+    unlink("upload/".$row['image']);
 
     $delete_stmt = $conn->prepare('DELETE FROM products WHERE id = :id');
     $delete_stmt->bindParam(':id', $id);
@@ -248,7 +249,7 @@ if (isset($_REQUEST['delete_id'])) {
 
                             <!-- Modal body -->
                             <div class="modal-body">
-                                <form action="admin_add_product.php" method="POST">
+                                <form action="admin_add_product.php" method="POST" class="form-horizontal" enctype="multipart/form-data">
                                     <?php if (isset($_SESSION['error'])) { ?>
                                         <div class="alert alert-danger" role="alert">
                                             <?php
@@ -289,70 +290,11 @@ if (isset($_REQUEST['delete_id'])) {
                                         <label for="price" class="form-label">ราคา</label>
                                         <input type="text" class="form-control" name="price" aria-describebdy="price">
                                     </div>
-                                    <!-- Modal footer -->
-                                    <div class="modal-footer">
-                                        <input type="submit" name="addproduct" class="btn btn-success" value="เพิ่มข้อมูล">
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">ปิด</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- The Modal เพิ่มข้อมูล -->
-                <div class="modal" id="addModal">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-
-                            <!-- Modal Header -->
-                            <div class="modal-header">
-                                <h4 class="modal-title">เพิ่มข้อมูลสินค้า</h4>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-
-                            <!-- Modal body -->
-                            <div class="modal-body">
-                                <form action="admin_add_product.php" method="POST">
-                                    <?php if (isset($_SESSION['error'])) { ?>
-                                        <div class="alert alert-danger" role="alert">
-                                            <?php
-                                            echo $_SESSION['error'];
-                                            unset($_SESSION['error']);
-                                            ?>
+                                    <div>
+                                        <label for="file" class="form-label">รูปภาพ</label>
+                                        <div>
+                                            <input type="file" name="file" class="form-control">
                                         </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['success'])) { ?>
-                                        <div class="alert alert-success" role="alert">
-                                            <?php
-                                            echo $_SESSION['success'];
-                                            unset($_SESSION['success']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['warning'])) { ?>
-                                        <div class="alert alert-warning" role="alert">
-                                            <?php
-                                            echo $_SESSION['warning'];
-                                            unset($_SESSION['warning']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <div class="mb-3">
-                                        <label for="name" class="form-label">ชื่อสินค้า</label>
-                                        <input type="text" class="form-control" name="name" aria-describebdy="name">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">คำอธิบาย</label>
-                                        <input type="text" class="form-control" name="description" aria-describebdy="description">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="type" class="form-label">ประเภท</label>
-                                        <input type="text" class="form-control" name="type" aria-describebdy="type">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="price" class="form-label">ราคา</label>
-                                        <input type="text" class="form-control" name="price" aria-describebdy="price">
                                     </div>
                                     <!-- Modal footer -->
                                     <div class="modal-footer">
@@ -445,6 +387,7 @@ if (isset($_REQUEST['delete_id'])) {
                                             <thead>
                                                 <tr>
                                                     <th scope="col" style="text-align: center">ID</th>
+                                                    <th scope="col" style="text-align: center"></th>
                                                     <th scope="col" style="text-align: center">ชื่อสินค้า</th>
                                                     <th scope="col" style="text-align: center">คำอธิบาย</th>
                                                     <th scope="col" style="text-align: center">ประเภท</th>
@@ -463,12 +406,19 @@ if (isset($_REQUEST['delete_id'])) {
                                                     <form action="admin_user.php" method="POST">
                                                         <tr>
                                                             <th scope="row" style="text-align: center"><?php echo $row['id']; ?></th>
+                                                            <td style="text-align: center"><img src="upload/<?php echo $row['image']; ?>" width="100px" height="100px" alt=""></td>
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['description']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['type']; ?></td>
                                                             <td style="text-align: center"><?php echo number_format($row['price']); ?></td>
                                                             <td style="text-align: center"><?php echo $row['amount']; ?></td>
-                                                            <td style="text-align: center"><?php echo $row['status']; ?></td>
+                                                            <td style="text-align: center;color:<?php 
+                                                                if ($row['status'] == "พร้อมขาย") {
+                                                                    echo "green";
+                                                                } else {
+                                                                    echo "red";
+                                                                }
+                                                            ?>"><?php echo $row['status']; ?></td>
                                                             <td><a href="admin_edit_product.php?update_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">Edit</a></td>
                                                             <td><a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
                                                         </tr>

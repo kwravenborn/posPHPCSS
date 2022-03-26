@@ -232,15 +232,15 @@
                             </div>
 
                             <?php
-                                    $check_data = $conn->prepare("SELECT * FROM products");
+                                    $check_data = $conn->prepare("SELECT * FROM products WHERE status='พร้อมขาย'");
                                     $check_data->execute();
 
                                     while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
                                 ?>
                             <div class="js-products d-flex" style="height:90%;">
                                 <div class="card m-2 border-0" style="max-width: 250px;">
-                                    <a href="">  
-                                        <img src="" alt="" class="w-100 rounded border">
+                                    <a href="">
+                                        <img src="upload/<?php echo $row['image']; ?>" alt="" class="w-100 rounded border">
                                     </a> 
                                     <div class="p-4" style="font-size:20px">
                                         <div class="text-muted"><?php echo $row['name']; ?></div>
