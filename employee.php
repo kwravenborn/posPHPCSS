@@ -58,9 +58,6 @@ if (!isset($_SESSION['employee_login'])) {
             <hr class="sidebar-divider">
 
             <!-- Heading -->
-            <div class="sidebar-heading">
-                Interface
-            </div>
 
             <!-- Nav Item - Order -->
             <li class="nav-item">
@@ -86,7 +83,7 @@ if (!isset($_SESSION['employee_login'])) {
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">จัดการข้อมูลสินค้า</h6>
                         <a class="collapse-item" href="employee_product.php">ข้อมูลสินค้า</a>
-                        <a class="collapse-item" href="">ข้อมูลสต็อกสินค้า</a>
+                        <a class="collapse-item" href="employee_stock.php">ข้อมูลสต็อกสินค้า</a>
                         <a class="collapse-item" href="">ข้อมูลการขาย</a>
                     </div>
                 </div>

@@ -58,11 +58,6 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Interface
-            </div>
-
             <!-- Nav Item - Order -->
             <li class="nav-item">
                 <a class="nav-link" href="employee_create_order.php">
@@ -87,7 +82,7 @@
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">จัดการข้อมูลสินค้า</h6>
                         <a class="collapse-item" href="employee_product.php">ข้อมูลสินค้า</a>
-                        <a class="collapse-item" href="">ข้อมูลสต็อกสินค้า</a>
+                        <a class="collapse-item" href="employee_stock.php">ข้อมูลสต็อกสินค้า</a>
                         <a class="collapse-item" href="">ข้อมูลการขาย</a>
                     </div>
                 </div>
@@ -224,41 +219,53 @@
                     <center><h2>รายการสั่งซื้อสินค้า</h2></center>
                 </div>
                 <div class="d-flex">
-                    <div style="height:600px;overflow-y: scroll;" class="shadow-sm col p-4">
-                        <div><center><h3>รายการสินค้า</h3></center>
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1" autofocus>
-                                <span class="input-group-text" id="basic-addon1"><i class="fa fa-search"></i></span>
-                            </div>
+                    <div style="height:600px;overflow-y: scroll;" class="shadow-sm col-6 p-4">
+                        <div><center><h4>รายการสินค้า</h4></center>
+                            <form action="" method="POST">
+                                <div class="input-group mb-3">
+                                    <input type="text" name="srh" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1" autofocus>
+                                    <input type="submit" name="search" class="btn btn-info">
+                                    <a href="" class="btn btn-secondary">View All</a>
+                                </div>
+                            </form>
 
+
+                            <div class="js-products d-flex" style="flex-wrap: wrap;height:90%;">
                             <?php
+                                if (isset($_POST['search'])) {
+                                    $srh = $_POST['srh'];
+                                    $check_data = $conn->prepare("SELECT * FROM products WHERE name = '$srh' OR description = '$srh' 
+                                    OR type = '$srh' OR price = '$srh' OR id = '$srh' AND status = 'พร้อมขาย'");
+                                    $check_data->execute();
+                                } else {
                                     $check_data = $conn->prepare("SELECT * FROM products WHERE status='พร้อมขาย'");
                                     $check_data->execute();
+                                }                                    
 
                                     while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
                                 ?>
-                            <div class="js-products d-flex" style="height:90%;">
-                                <div class="card m-2 border-0" style="max-width: 250px;">
+                                <div class="card m-2 border-0" style="min-width: 250px;max-width: 250px;">
                                     <a href="">
                                         <img src="upload/<?php echo $row['image']; ?>" alt="" class="w-100 rounded border">
                                     </a> 
-                                    <div class="p-4" style="font-size:20px">
+                                    <div class="p-4" >
                                         <div class="text-muted"><?php echo $row['name']; ?></div>
-                                        <div class=""><b><?php echo number_format($row['price']); ?> ฿</b></div>
+                                        <div class="" style="font-size:20px"><b><?php echo number_format($row['price']); ?> ฿</b></div>
                                     </div>
                                 </div>
+                                <?php } ?> 
                             </div>                                
 
-                            <?php } ?>     
+    
 
                         </div>
                     </div>
-                    <div class="col bg-light p-4 pt-2">
-                        <div><center><h3>ตะกร้าสินค้า <div class="badge bg-primary">3</div></h3></center></div>
+                    <div class="col-6 bg-light p-4 pt-2">
+                        <div><center><h4>ตะกร้าสินค้า <div class="badge bg-primary">3</div></h4></center></div>
                         
                             <table class="table table-striped">
                                 <tr>
-                                    <th>รูปภาพ</th>
+                                    <th></th>
                                     <th>ชื่อสินค้า</th>
                                     <th>จำนวนสินค้า</th>
                                     <th>ราคา</th>

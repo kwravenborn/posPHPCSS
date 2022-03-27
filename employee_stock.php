@@ -1,9 +1,28 @@
-<?php
-session_start();
-require_once 'config/db.php';
-if (!isset($_SESSION['admin_login'])) {
-    header('location: index.php');
-}
+<?php 
+
+    session_start();
+    require_once 'config/db.php';
+    if (!isset($_SESSION['employee_login'])) {
+        header('location: index.php');
+    }
+
+    if (isset($_REQUEST['delete_id'])) {
+        $id = $_REQUEST['delete_id'];
+
+        $select_stmt = $conn->prepare('SELECT * FROM stockpd WHERE id = :id');
+        $select_stmt->bindParam(':id', $id);
+        $select_stmt->execute();
+        $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+        unlink("upload/".$row['image']);
+        
+        $delete_stmt = $conn->prepare('DELETE FROM stockpd WHERE id = :id');
+        $delete_stmt->bindParam(':id', $id);
+        $delete_stmt->execute();
+
+        header("location: employee_stockpd.php");
+    }
+    
+
 ?>
 
 <!DOCTYPE html>
@@ -13,7 +32,7 @@ if (!isset($_SESSION['admin_login'])) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Home Page</title>
+    <title>Employee Home Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://unpkg.com/feather-icons"></script>
     <!-- Place this tag in your head or just before your close body tag. -->
@@ -36,11 +55,11 @@ if (!isset($_SESSION['admin_login'])) {
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">POS <sup>Admin</sup></div>
+                <div class="sidebar-brand-text mx-3">POS <sup>Employee</sup></div>
             </a>
 
             <!-- Divider -->
@@ -48,7 +67,7 @@ if (!isset($_SESSION['admin_login'])) {
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="admin.php">
+                <a class="nav-link" href="Employee.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
             </li>
@@ -56,25 +75,19 @@ if (!isset($_SESSION['admin_login'])) {
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Interface
-            </div>
+            <!-- Nav Item - Order -->
+            <li class="nav-item">
+                <a class="nav-link" href="employee_create_order.php">
+                    <i class="fas fa-fw fa-dollar-sign"></i>
+                    <span>ทำรายการสั่งซื้อ</span></a>
+            </li>              
 
             <!-- Nav Item - Employess and Customer -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                <a class="nav-link" href="employee_manageCus.php">
                     <i class="fas fa-fw fa-user"></i>
-                    <span>ข้อมูลพนักงานและลูกค้า</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">จัดการข้อมูล</h6>
-                        <a class="collapse-item" href="admin_manageEmp.php">พนักงาน</a>
-                        <a class="collapse-item" href="admin_manageCus.php">ลูกค้า</a>
-                    </div>
-                </div>
-            </li>
+                    <span>ข้อมูลลูกค้า</span></a>
+            </li> 
 
             <!-- Nav Item - Product -->
             <li class="nav-item">
@@ -85,9 +98,9 @@ if (!isset($_SESSION['admin_login'])) {
                 <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">จัดการข้อมูลสินค้า</h6>
-                        <a class="collapse-item" href="admin_product.php">ข้อมูลสินค้า</a>
-                        <a class="collapse-item" href="admin_stock.php">ข้อมูลสต็อกสินค้า</a>
-                        <a class="collapse-item" href="admin_order.php">ข้อมูลการขาย</a>
+                        <a class="collapse-item" href="employee_product.php">ข้อมูลสินค้า</a>
+                        <a class="collapse-item" href="employee_stockpd.php">ข้อมูลสต็อกสินค้า</a>
+                        <a class="collapse-item" href="">ข้อมูลการขาย</a>
                     </div>
                 </div>
             </li>
@@ -105,13 +118,6 @@ if (!isset($_SESSION['admin_login'])) {
                 <a class="nav-link" href="charts.php">
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Charts</span></a>
-            </li>
-
-            <!-- Nav Item - Tables -->
-            <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
             </li>
 
             <!-- Divider -->
@@ -176,6 +182,25 @@ if (!isset($_SESSION['admin_login'])) {
                         <!-- Nav Item - User Information -->
 
                         <li class="nav-item dropdown no-arrow">
+                            <tbody>
+                                <?php
+                                $check_data = $conn->prepare("SELECT * FROM customers");
+                                $check_data->execute();
+
+                                while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
+                                ?>
+                                    <!-- <tr>
+                                    <th scope="row"><?php echo $row['id']; ?></th>
+                                    <td><?php echo $row['firstname']; ?></td>
+                                    <td><?php echo $row['lastname']; ?></td>
+                                    <td><?php echo $row['address']; ?></td>
+                                    <td><?php echo $row['phone']; ?></td>
+                                    <td><?php echo $row['email']; ?></td>
+                                    <td><?php echo $row['birthday']; ?></td>
+                                    <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
+                                </tr> -->
+                                <?php } ?>
+                            </tbody>
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>
                                     <?php
@@ -184,7 +209,7 @@ if (!isset($_SESSION['admin_login'])) {
 
                                     while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
                                     ?>
-                                        <form action="admin_Emp.php" method="POST">
+                                        <form action="" method="POST">
                                             <tr>
                                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $row['firstname']; ?> <?php echo $row['lastname']; ?></span>
                                             </tr>
@@ -214,7 +239,6 @@ if (!isset($_SESSION['admin_login'])) {
                 <!-- End of Topbar -->
 
 
-
                 <div class="container-fluid">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
@@ -236,13 +260,10 @@ if (!isset($_SESSION['admin_login'])) {
                                                     <th scope="col" style="text-align: center">วันที่ stock สินค้า</th>
                                                     <th scope="col" style="text-align: center">ชื่อสินค้า</th>
                                                     <th scope="col" style="text-align: center">จำนวนที่ stock สินค้า</th>
-                                                    <th></th>
-                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <?php
-
                                                 if(isset($_POST['search'])) {
                                                     $srh = $_POST['srh'];
                                                     $check_data = $conn->prepare("SELECT * FROM stockpd WHERE date = '$srh' OR name = '$srh'
@@ -254,11 +275,9 @@ if (!isset($_SESSION['admin_login'])) {
                                                     $check_data->execute();
                                                 }
 
-
-
                                                 while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
                                                 ?>
-                                                    <form action="admin_user.php" method="POST">
+                                                    <form action="" method="POST">
                                                         <tr>
                                                             <th scope="row"><?php echo $row['id']; ?></th>
                                                             <td style="text-align: center"><?php echo $row['date']; ?></td>
@@ -269,6 +288,7 @@ if (!isset($_SESSION['admin_login'])) {
                                                         </tr>
                                                     </form>
                                                 <?php } ?>
+                                            </tbody>
                                             </tbody>
                                         </table>
                                     </div>
@@ -317,7 +337,7 @@ if (!isset($_SESSION['admin_login'])) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>      
 
         <!-- Bootstrap core JavaScript-->
         <script src="vendor/jquery/jquery.min.js"></script>

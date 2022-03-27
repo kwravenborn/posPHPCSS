@@ -160,14 +160,10 @@
                     </button>
 
                     <!-- Topbar Search -->
-                    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
+                    <form method="POST" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" action="">
+                        <div>
+                            <input type="text" name="srh" class="form-control bg-light border-0 small" placeholder="Search for...">.
+                            <input type="submit" name="search" class="btn btn-primary">
                         </div>
                     </form>
 
@@ -182,14 +178,14 @@
                             <!-- Dropdown - Messages -->
                             <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in" aria-labelledby="searchDropdown">
                                 <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button">
+                                    <i class="fas fa-search fa-sm"></i>
+                                </button>
+                            </div>
+                        </div>
                                 </form>
                             </div>
                         </li>
@@ -203,9 +199,10 @@
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>
                                     <?php
-                                    $check_data = $conn->prepare("SELECT * FROM users");
-                                    $check_data->execute();
-
+                                 
+                                        $check_data = $conn->prepare("SELECT * FROM users");
+                                        $check_data->execute();
+                                    
                                     while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
                                     ?>
                                         <form action="admin_Emp.php" method="POST">
@@ -355,7 +352,6 @@
                                         <table class="table">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col" style="text-align: center">ID</th>
                                                     <th scope="col" style="text-align: center"></th>
                                                     <th scope="col" style="text-align: center">Username</th>
                                                     <th scope="col" style="text-align: center">ชื่อ</th>
@@ -369,14 +365,24 @@
                                             </thead>
                                             <tbody>
                                                 <?php
-                                                $check_data = $conn->prepare("SELECT * FROM users");
-                                                $check_data->execute();
+
+
+                                                if (isset($_POST['search'])) {
+
+                                                    $srh = $_POST['srh'];
+                                                    $check_data = $conn->prepare("SELECT * FROM users WHERE username = '$srh' OR firstname = '$srh' OR lastname = '$srh' OR address = '$srh'
+                                                    OR phone = '$srh' OR email = '$srh' OR birthday = '$srh' OR urole = '$srh' OR id = '$srh'");
+                                                    $check_data->execute();
+
+                                                } else {                                   
+                                                    $check_data = $conn->prepare("SELECT * FROM users");
+                                                    $check_data->execute();
+                                                }
 
                                                 while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
                                                 ?>
                                                     <form action="" method="POST">
                                                         <tr>
-                                                            <th scope="row" style="text-align: center"><?php echo $row['id']; ?></th>
                                                             <td style="text-align: center"><img src="upload/<?php echo $row['image']; ?>" width="100px" height="100px" alt=""></td>
                                                             <td style="text-align: center"><?php echo $row['username']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['firstname']; ?></td>

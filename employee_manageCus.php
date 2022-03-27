@@ -98,11 +98,6 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Interface
-            </div>
-
             <!-- Nav Item - Order -->
             <li class="nav-item">
                 <a class="nav-link" href="employee_create_order.php">
@@ -127,7 +122,7 @@
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">จัดการข้อมูลสินค้า</h6>
                         <a class="collapse-item" href="employee_product.php">ข้อมูลสินค้า</a>
-                        <a class="collapse-item" href="">ข้อมูลสต็อกสินค้า</a>
+                        <a class="collapse-item" href="employee_stock.php">ข้อมูลสต็อกสินค้า</a>
                         <a class="collapse-item" href="">ข้อมูลการขาย</a>
                     </div>
                 </div>
@@ -174,14 +169,10 @@
                     </button>
 
                     <!-- Topbar Search -->
-                    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
+                    <form method="POST" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" action="">
+                        <div>
+                            <input type="text" name="srh" class="form-control bg-light border-0 small" placeholder="Search for...">.
+                            <input type="submit" name="search" class="btn btn-primary">
                         </div>
                     </form>
 
@@ -372,8 +363,17 @@
                                             </thead>
                                             <tbody>
                                                 <?php
-                                                $check_data = $conn->prepare("SELECT * FROM customers");
-                                                $check_data->execute();
+
+                                                if (isset($_POST['search'])) {
+                                                    $srh = $_POST['srh'];
+                                                    $check_data = $conn->prepare("SELECT * FROM customers WHERE firstname = '$srh' OR lastname = '$srh' OR address = '$srh'
+                                                    OR phone = '$srh' OR email = '$srh' OR birthday = '$srh' OR id = '$srh'");
+                                                    $check_data->execute();
+                                                } else {
+                                                    $check_data = $conn->prepare("SELECT * FROM customers");
+                                                    $check_data->execute();
+                                            }
+
 
                                                 while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
                                                 ?>
