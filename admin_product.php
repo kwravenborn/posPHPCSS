@@ -414,7 +414,7 @@ if (isset($_REQUEST['delete_id'])) {
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['description']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['type']; ?></td>
-                                                            <td style="text-align: center"><?php echo number_format($row['price']); ?></td>
+                                                            <td style="text-align: center"><?php echo number_format($row['price'],2); ?></td>
                                                             <td style="text-align: center"><?php echo $row['amount']; ?></td>
                                                             <td style="text-align: center;color:<?php 
                                                                 if ($row['status'] == "พร้อมขาย") {

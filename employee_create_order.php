@@ -1,10 +1,61 @@
 <?php 
 
     session_start();
-    require_once 'config/db.php';
+    require_once 'config/db2.php';
+    $db_handle = new DBcontroller();
+
     if (!isset($_SESSION['employee_login'])) {
         header('location: index.php');
     }
+
+    if(!empty($_GET["action"])) {
+        switch($_GET["action"]) {
+            case "add";
+                if(!empty($_POST["quantity"])) {
+                    $productById = $db_handle->runQuery("SELECT * FROM products WHERE id ='" . $_GET["id"]. "'");
+                    $itemArray = array($productById[0]["id"]=>(array('name'=>$productById[0]["name"],
+                                                                        'id'=>$productById[0]["id"],
+                                                                        'quantity'=>$_POST["quantity"],
+                                                                        'price'=>$productById[0]["price"],
+                                                                        'image'=>$productById[0]["image"])));
+                }
+
+                if(!empty($_SESSION["cart_item"])) {
+                    if(in_array($productById[0]["id"],array_keys($_SESSION["cart_item"]))) {
+                        foreach($_SESSION["cart_item"] as $k => $v) {
+                            if($productById[0]["id"] == $k) {
+                                if(empty($_SESSION["cart_item"][$k]["quantity"])) {
+                                    $_SESSION["cart_item"][$k]["quantity"] = 0;
+                                }
+                                $_SESSION["cart_item"][$k]["quantity"] += $_POST["quantity"];
+                            }
+                        }
+                    } else {
+                        $_SESSION["cart_item"] = array_merge($_SESSION["cart_item"], $itemArray);
+                    }
+                } else {
+                    $_SESSION["cart_item"] = $itemArray;
+                }
+            break;
+            case "remove";
+                if(!empty($_SESSION["cart_item"])) {
+                    foreach($_SESSION["cart_item"] as $k => $v) {
+                        if($_GET["id"] == $k) {
+                            unset($_SESSION["cart_item"][$k]);
+                        }
+                        if(empty($_SESSION["cart_item"])) {
+                            unset($_SESSION["cart_item"]);
+                        }
+                    }
+                }
+            break;
+            case "empty";
+                unset($_SESSION["cart_item"]);
+            break;
+        }
+    }
+
+    
 
 ?>
 
@@ -160,38 +211,17 @@
 
                         <li class="nav-item dropdown no-arrow">
                             <tbody>
-                                <?php
-                                $check_data = $conn->prepare("SELECT * FROM customers");
-                                $check_data->execute();
 
-                                while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                ?>
-                                    <!-- <tr>
-                                    <th scope="row"><?php echo $row['id']; ?></th>
-                                    <td><?php echo $row['firstname']; ?></td>
-                                    <td><?php echo $row['lastname']; ?></td>
-                                    <td><?php echo $row['address']; ?></td>
-                                    <td><?php echo $row['phone']; ?></td>
-                                    <td><?php echo $row['email']; ?></td>
-                                    <td><?php echo $row['birthday']; ?></td>
-                                    <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
-                                </tr> -->
-                                <?php } ?>
                             </tbody>
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>
-                                    <?php
-                                    $check_data = $conn->prepare("SELECT * FROM users");
-                                    $check_data->execute();
 
-                                    while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                    ?>
                                         <form action="" method="POST">
                                             <tr>
-                                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $row['firstname']; ?> <?php echo $row['lastname']; ?></span>
+                                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"></span>
                                             </tr>
                                         </form>
-                                    <?php } ?>
+ 
                                 </tbody>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
 
@@ -230,47 +260,105 @@
                             </form>
 
 
-                            <div class="js-products d-flex" style="flex-wrap: wrap;height:90%;">
+                            <div onlick="" class="js-products d-flex" style="flex-wrap: wrap;height:90%;">
                             <?php
-                                if (isset($_POST['search'])) {
-                                    $srh = $_POST['srh'];
-                                    $check_data = $conn->prepare("SELECT * FROM products WHERE name = '$srh' OR description = '$srh' 
-                                    OR type = '$srh' OR price = '$srh' OR id = '$srh' AND status = 'พร้อมขาย'");
-                                    $check_data->execute();
-                                } else {
-                                    $check_data = $conn->prepare("SELECT * FROM products WHERE status='พร้อมขาย'");
-                                    $check_data->execute();
-                                }                                    
 
-                                    while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
+
+                                $product_array = $db_handle->runQuery("SELECT * FROM products WHERE status ='พร้อมขาย' ");
+                                if (!empty($product_array)) {
+                                    foreach ($product_array as $key => $value) { ?>
+                                        <form action="employee_create_order.php?action=add&id=<?php echo $product_array[$key]["id"];?>" method="POST">
+                                            <div class="card m-2 border-0" style="min-width: 250px;max-width: 250px;">
+                                                <div class="product-image">
+                                                    <img src="upload/<?php echo $product_array[$key]["image"]; ?>" alt="" class="w-100 rounded border">
+                                                </div>                                      
+                                                <div class="p-4" >
+                                                    <div class="text-muted"><?php echo $product_array[$key]["name"]; ?></div>
+                                                    <div class="" style="font-size:20px"><b><?php echo number_format($product_array[$key]["price"],2)." ฿"; ?></b></div>
+                                                    <div class="cart-action">
+                                                        <input type="text" class="product-quantity" name="quantity" value="1" size="2">
+                                                        <input type="submit" value="เพิ่มสินค้า" class="btnAddAction btn-success">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    <?php
+                                    }
+                                }
                                 ?>
-                                <div class="card m-2 border-0" style="min-width: 250px;max-width: 250px;">
-                                    <a href="">
-                                        <img src="upload/<?php echo $row['image']; ?>" alt="" class="w-100 rounded border">
-                                    </a> 
-                                    <div class="p-4" >
-                                        <div class="text-muted"><?php echo $row['name']; ?></div>
-                                        <div class="" style="font-size:20px"><b><?php echo number_format($row['price']); ?> ฿</b></div>
-                                    </div>
-                                </div>
-                                <?php } ?> 
                             </div>                                
 
     
 
                         </div>
                     </div>
-                    <div class="col-6 bg-light p-4 pt-2">
-                        <div><center><h4>ตะกร้าสินค้า <div class="badge bg-primary">3</div></h4></center></div>
+                    <div style="height:600px;overflow-y: scroll;" class="col-6 bg-light p-4 pt-2">
+                        <div><center><h4>ตะกร้าสินค้า <a href="employee_create_order.php?action=empty" id="btnEmpty">Empty</a></h4></center></div>
+                    
+                        <?php
+                            if(isset($_SESSION["cart_item"])) {
+                                $total_quantity = 0;
+                                $total_price = 0;
+                            
+                        ?>
+
                         
                             <table class="table table-striped">
                                 <tr>
                                     <th></th>
-                                    <th>ชื่อสินค้า</th>
-                                    <th>จำนวนสินค้า</th>
-                                    <th>ราคา</th>
+                                    <th style="text-align: center">ชื่อสินค้า</th>
+                                    <th style="text-align: center">จำนวนสินค้า (ชิ้น)</th>
+                                    <th style="text-align: center">ราคา (บาท)</th>
+                                    <th style="text-align: center">ลบ</th>
+                                    <th></th>
                                 </tr>
+                            
+                                <?php
+
+                                   foreach($_SESSION["cart_item"] as $item) {
+                                       $item_price = $item["quantity"] * $item["price"];
+                                    
+
+                                ?>
+
+                                <tr>
+                                    <td style="width:110px"><img src="upload/<?php echo $item["image"]; ?>" alt="" class="w-100 rounded border"></td>
+                                    <td style="text-align: center"><?php echo $item["name"]; ?></td>
+                                    <td style="text-align: center"><?php echo $item["quantity"]; ?></td>
+                                    <td style="text-align: center"><?php echo number_format($item["price"],2); ?></td>
+                                    <td style="text-align: center"><a href="employee_create_order.php?action=remove&id=<?php echo $item["id"];?>" class="btnRemoveAction" alt="Remove Item"><i data-feather="trash"></a></td>
+                                </tr>
+                                
+                                <?php
+                                    $total_quantity += $item["quantity"];
+                                    $total_price += ($item["price"] * $item["quantity"]);
+
+                                   }
+                                ?>
+
+                                <tr>
+                                    <td colspan="2" style="text-align: right">รวม :</td>
+                                    <td style="text-align: right"><?php echo $total_quantity; ?> ชิ้น</td>
+                                    <td colspan="2" style="text-align: right"><?php echo number_format($total_price,2)." ฿"; ?></td>
+                                    <td>
+                                    <div>
+                                        <button>สั่ง</button>
+                                    </div>
+                                    </td>
+                                </tr>
+                                
+
+
+
                             </table>
+                            <?php
+                                    
+                                   } else {
+                            ?>
+                                <div class="no-records">ยังไม่มีรายการสินค้า</div>
+                            <?php 
+                            } 
+                            ?>
                     </div>
                 </div>
 
@@ -312,8 +400,9 @@
                     </div>
                 </div>
             </div>
-        </div>      
+        </div>  
 
+ 
         <!-- Bootstrap core JavaScript-->
         <script src="vendor/jquery/jquery.min.js"></script>
         <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
