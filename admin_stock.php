@@ -178,18 +178,7 @@ if (!isset($_SESSION['admin_login'])) {
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>
-                                    <?php
-                                    $check_data = $conn->prepare("SELECT * FROM users");
-                                    $check_data->execute();
 
-                                    while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                    ?>
-                                        <form action="admin_Emp.php" method="POST">
-                                            <tr>
-                                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $row['firstname']; ?> <?php echo $row['lastname']; ?></span>
-                                            </tr>
-                                        </form>
-                                    <?php } ?>
                                 </tbody>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
 
@@ -232,7 +221,6 @@ if (!isset($_SESSION['admin_login'])) {
                                         <table class="table">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col" style="text-align: center">ID</th>
                                                     <th scope="col" style="text-align: center">วันที่ stock สินค้า</th>
                                                     <th scope="col" style="text-align: center">ชื่อสินค้า</th>
                                                     <th scope="col" style="text-align: center">จำนวนที่ stock สินค้า</th>
@@ -260,7 +248,6 @@ if (!isset($_SESSION['admin_login'])) {
                                                 ?>
                                                     <form action="admin_user.php" method="POST">
                                                         <tr>
-                                                            <th scope="row"><?php echo $row['id']; ?></th>
                                                             <td style="text-align: center"><?php echo $row['date']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['amount']; ?> ชิ้น</td>

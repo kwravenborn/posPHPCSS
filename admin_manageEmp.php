@@ -198,19 +198,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>
-                                    <?php
-                                 
-                                        $check_data = $conn->prepare("SELECT * FROM users");
-                                        $check_data->execute();
-                                    
-                                    while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                    ?>
-                                        <form action="admin_Emp.php" method="POST">
-                                            <tr>
-                                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $row['firstname']; ?> <?php echo $row['lastname']; ?></span>
-                                            </tr>
-                                        </form>
-                                    <?php } ?>
+
                                 </tbody>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
 
@@ -353,14 +341,14 @@
                                             <thead>
                                                 <tr>
                                                     <th scope="col" style="text-align: center"></th>
-                                                    <th scope="col" style="text-align: center">Username</th>
+                                                    <th scope="col" style="text-align: center">ชื่อผู้ใช้งาน</th>
                                                     <th scope="col" style="text-align: center">ชื่อ</th>
                                                     <th scope="col" style="text-align: center">นามสกุล</th>
                                                     <th scope="col" style="text-align: center">ที่อยู่</th>
                                                     <th scope="col" style="text-align: center">เบอร์โทรศัพท์</th>
                                                     <th scope="col" style="text-align: center">อีเมล</th>
                                                     <th scope="col" style="text-align: center">วันเกิด</th>
-                                                    <th scope="col" style="text-align: center">ระดับพนักงาน</th>
+                                                    <th scope="col" style="text-align: center">ระดับสมาชิก</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -391,7 +379,11 @@
                                                             <td style="text-align: center"><?php echo $row['phone']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['email']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['birthday']; ?></td>
-                                                            <td style="text-align: center"><?php echo $row['urole']; ?></td>
+                                                            <td style="text-align: center"><?php if ($row['urole'] == "Admin") {
+                                                                echo "ผู้ดูแลระบบ";
+                                                            } else {
+                                                                echo "พนักงาน";
+                                                            } ?></td>
                                                             <td><a href="admin_edit_Emp.php?update_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">Edit</a></td>
                                                             <td><a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
                                                         </tr>

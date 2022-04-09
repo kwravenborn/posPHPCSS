@@ -192,38 +192,11 @@ if (isset($_REQUEST['delete_id'])) {
 
                         <li class="nav-item dropdown no-arrow">
                             <tbody>
-                                <?php
-                                $check_data = $conn->prepare("SELECT * FROM customers");
-                                $check_data->execute();
 
-                                while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                ?>
-                                    <!-- <tr>
-                                    <th scope="row"><?php echo $row['id']; ?></th>
-                                    <td><?php echo $row['firstname']; ?></td>
-                                    <td><?php echo $row['lastname']; ?></td>
-                                    <td><?php echo $row['address']; ?></td>
-                                    <td><?php echo $row['phone']; ?></td>
-                                    <td><?php echo $row['email']; ?></td>
-                                    <td><?php echo $row['birthday']; ?></td>
-                                    <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
-                                </tr> -->
-                                <?php } ?>
                             </tbody>
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>
-                                    <?php
-                                    $check_data = $conn->prepare("SELECT * FROM users");
-                                    $check_data->execute();
 
-                                    while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                    ?>
-                                        <form action="admin_user.php" method="POST">
-                                            <tr>
-                                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $row['firstname']; ?> <?php echo $row['lastname']; ?></span>
-                                            </tr>
-                                        </form>
-                                    <?php } ?>
                                 </tbody>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
 
