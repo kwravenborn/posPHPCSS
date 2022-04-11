@@ -88,7 +88,7 @@ if (isset($_REQUEST['btn_update'])) {
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Interface
+            ข้อมูล
             </div>
 
             <!-- Nav Item - Employess and Customer -->
@@ -125,24 +125,7 @@ if (isset($_REQUEST['btn_update'])) {
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Addons
-            </div>
 
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
-                <a class="nav-link" href="charts.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>
-
-            <!-- Nav Item - Tables -->
-            <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
-            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
