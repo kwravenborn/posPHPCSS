@@ -13,7 +13,8 @@
         $price = $_POST['price'];
         $amount = 0;
         $status = "ไม่พร้อมขาย";
-
+        $product_num = rand(0,9999)."1111".rand(0,99999);
+        
         $image_file = $_FILES['file']['name'];
         $itype = $_FILES['file']['type'];
         $size = $_FILES['file']['size'];
@@ -37,18 +38,42 @@
 
         
         try {
-            $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type) 
-            VALUES(:name, :description, :price, :amount, :status, :image, :type)");
-            $stmt->bindParam(":name", $name);
-            $stmt->bindParam(":description", $description);
-            $stmt->bindParam(":price", $price);
-            $stmt->bindParam(":amount", $amount);
-            $stmt->bindParam(":status", $status);
-            $stmt->bindParam(":type", $type);
-            $stmt->bindParam(":image", $image_file);
-            $stmt->execute();
-            $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
-            header("location: admin_product.php");                
+            $check_productnum = $conn->prepare("SELECT product_num FROM products WHERE product_num = :product_num");
+            $check_productnum->bindParam(":product_num", $product_num);
+            $check_productnum->execute();
+            $row = $check_productnum->fetch(PDO::FETCH_ASSOC);
+
+            if($row['product_num'] == $product_num){
+                $product_num = rand(0,9999).rand(1000,9999).rand(0,99999);
+                $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type, product_num) 
+                VALUES(:name, :description, :price, :amount, :status, :image, :type ,:product_num)");
+                $stmt->bindParam(":name", $name);
+                $stmt->bindParam(":description", $description);
+                $stmt->bindParam(":price", $price);
+                $stmt->bindParam(":amount", $amount);
+                $stmt->bindParam(":status", $status);
+                $stmt->bindParam(":type", $type);
+                $stmt->bindParam(":product_num", $product_num);
+                $stmt->bindParam(":image", $image_file);
+                $stmt->execute();
+                $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
+                header("location: admin_product.php"); 
+            } else {
+                $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type, product_num) 
+                VALUES(:name, :description, :price, :amount, :status, :image, :type ,:product_num)");
+                $stmt->bindParam(":name", $name);
+                $stmt->bindParam(":description", $description);
+                $stmt->bindParam(":price", $price);
+                $stmt->bindParam(":amount", $amount);
+                $stmt->bindParam(":status", $status);
+                $stmt->bindParam(":type", $type);
+                $stmt->bindParam(":product_num", $product_num);
+                $stmt->bindParam(":image", $image_file);
+                $stmt->execute();
+                $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
+                header("location: admin_product.php"); 
+            }
+               
 
         } catch (PDOException $e) {
                 echo $e->getMessage();

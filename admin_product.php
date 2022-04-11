@@ -77,7 +77,7 @@ if (isset($_REQUEST['delete_id'])) {
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Interface
+                ข้อมูล
             </div>
 
             <!-- Nav Item - Employess and Customer -->
@@ -114,24 +114,7 @@ if (isset($_REQUEST['delete_id'])) {
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Addons
-            </div>
 
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
-                <a class="nav-link" href="charts.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>
-
-            <!-- Nav Item - Tables -->
-            <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
-            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -372,12 +355,12 @@ if (isset($_REQUEST['delete_id'])) {
                                                 <tr>
                                                     <th scope="col" style="text-align: center">รหัสสินค้า</th>
                                                     <th scope="col" style="text-align: center"></th>
-                                                    <th scope="col" style="text-align: center">ชื่อสินค้า</th>
+                                                    <th scope="col" style="text-align: center" width=500>ชื่อสินค้า</th>
                                                     <th scope="col" style="text-align: center">คำอธิบาย</th>
                                                     <th scope="col" style="text-align: center">ประเภท</th>
                                                     <th scope="col" style="text-align: center">ราคา (บาท)</th>
-                                                    <th scope="col" style="text-align: center">สินค้าคงเหลือ (ชิ้น)</th>
-                                                    <th scope="col" style="text-align: center">สถานะ</th>
+                                                    <th scope="col" style="text-align: center" width=100>สินค้าคงเหลือ (ชิ้น)</th>
+                                                    <th scope="col" style="text-align: center" width=100>สถานะ</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -386,7 +369,7 @@ if (isset($_REQUEST['delete_id'])) {
 
                                                         $srh = $_POST['srh'];
                                                         $check_data = $conn->prepare("SELECT * FROM products WHERE name = '$srh' OR description = '$srh' 
-                                                        OR type = '$srh' OR price = '$srh' OR status = '$srh' OR id = '$srh'");
+                                                        OR type = '$srh' OR price = '$srh' OR product_num = '$srh' OR status = '$srh' OR id = '$srh'");
                                                         $check_data->execute();
                                                     } else {
                                                         $check_data = $conn->prepare("SELECT * FROM products");
@@ -397,13 +380,17 @@ if (isset($_REQUEST['delete_id'])) {
                                                 ?>
                                                     <form action="admin_user.php" method="POST">
                                                         <tr>
-                                                            <th scope="row" style="text-align: center"><?php echo $row['id']; ?></th>
+                                                            <th scope="row" style="text-align: center"><?php echo $row['product_num']; ?></th>
                                                             <td style="text-align: center"><img src="upload/<?php echo $row['image']; ?>" width="100px" height="100px" alt=""></td>
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['description']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['type']; ?></td>
                                                             <td style="text-align: center"><?php echo number_format($row['price'],2); ?></td>
-                                                            <td style="text-align: center"><?php echo $row['amount']; ?></td>
+                                                            <td style="text-align: center"><?php if($row['amount'] == 0){
+                                                                echo "หมด";
+                                                            } else {
+                                                                echo $row['amount'];
+                                                            }?></td>
                                                             <td style="text-align: center;color:<?php 
                                                                 if ($row['status'] == "พร้อมขาย") {
                                                                     echo "green";

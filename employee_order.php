@@ -1,74 +1,31 @@
-<?php
+<?php 
 
-session_start();
-require_once 'config/db.php';
-if (!isset($_SESSION['admin_login'])) {
-    header('location: index.php');
-}
+    session_start();
+    require_once 'config/db.php';
+    if (!isset($_SESSION['employee_login'])) {
+        header('location: index.php');
+    }
 
-if (isset($_REQUEST['update_id'])) {
-    try {
-        $id = $_REQUEST['update_id'];
-        $select_stmt = $conn->prepare('SELECT * FROM products WHERE id = :id');
+    if (isset($_REQUEST['delete_id'])) {
+        $id = $_REQUEST['delete_id'];
+    
+        $select_stmt = $conn->prepare('SELECT * FROM orders WHERE id = :id');
         $select_stmt->bindParam(':id', $id);
         $select_stmt->execute();
         $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        $e->getMessage();
+    
+        $delete_stmt = $conn->prepare('DELETE FROM orders WHERE id = :id');
+        $delete_stmt->bindParam(':id', $id);
+        $delete_stmt->execute();
+    
+        $delete_dt = $conn->prepare('DELETE FROM order_detail WHERE orders_num = :orders_num');
+        $delete_dt->bindParam(':orders_num', $row['orders_num']);
+        $delete_dt->execute();
+    
+        header("location: employee_order.php");
     }
-}
-
-if (isset($_REQUEST['btn_update'])) {
-    try {
-        $name = $_REQUEST['name'];
-        $description = $_REQUEST['description'];
-        $type = $_REQUEST['type'];
-        $price = $_REQUEST['price'];
-        $amount = $_REQUEST['amount'];
-        $status = $_REQUEST['status'];
-        $image_file = $_FILES['file']['name'];
-        $itype = $_FILES['file']['type'];
-        $size = $_FILES['file']['size'];
-        $temp = $_FILES['file']['tmp_name'];
-
-        $path = "upload/" . $image_file;  //set upload folder path
-        $direc = "upload/";
-
-        if ($image_file) {
-            if ($itype == "image/jpg" || $itype == "image/jpeg" || $itype == "image/png" || $itype == "image/gif") {
-                if (!file_exists($path)) {  // check file not exist in your upload folder path
-                    if ($size < 5000000) {  // check file size
-                        unlink($direc.$row['image']);
-                        move_uploaded_file($temp, 'upload/'.$image_file); //move upload file temperary to upload folder
-                    } else {
-                        $errorMsg = "Your file too large.";
-                    }
-                } else {
-                    $errorMsg = "File already exists.";
-                }
-            } else {
-                $errorMsg = "Upload JPG, JPEG, PNG and GIF file formate.";
-            }
-        } else {
-            $image_file = $row['image'];
-        }
-
-        $update_stmt = $conn->prepare("UPDATE products SET name = :name, description = :description, type = :type, price = :price, amount = :amount, status = :status, image = :fimage WHERE id = :id");
-        $update_stmt->bindParam(':name', $name);
-        $update_stmt->bindParam(':description', $description);
-        $update_stmt->bindParam(':type', $type);
-        $update_stmt->bindParam(':price', $price);
-        $update_stmt->bindParam(':amount', $amount);
-        $update_stmt->bindParam(':status', $status);
-        $update_stmt->bindParam(':fimage', $image_file);
-        $update_stmt->bindParam(':id', $id);
-        $update_stmt->execute();
-
-        header("location: admin_product.php");
-    } catch (PDOException $e) {
-        $e->getMessage();
-    }
-}
+    
+   
 ?>
 
 <!DOCTYPE html>
@@ -78,7 +35,7 @@ if (isset($_REQUEST['btn_update'])) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Home Page</title>
+    <title>Employee Home Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://unpkg.com/feather-icons"></script>
     <!-- Place this tag in your head or just before your close body tag. -->
@@ -101,11 +58,11 @@ if (isset($_REQUEST['btn_update'])) {
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">POS <sup>Admin</sup></div>
+                <div class="sidebar-brand-text mx-3">POS <sup>Employee</sup></div>
             </a>
 
             <!-- Divider -->
@@ -113,7 +70,7 @@ if (isset($_REQUEST['btn_update'])) {
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="admin.php">
+                <a class="nav-link" href="Employee.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
             </li>
@@ -121,25 +78,20 @@ if (isset($_REQUEST['btn_update'])) {
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Interface
-            </div>
+
+            <!-- Nav Item - Order -->
+            <li class="nav-item">
+                <a class="nav-link" href="employee_create_order.php">
+                    <i class="fas fa-fw fa-dollar-sign"></i>
+                    <span>ทำรายการสั่งซื้อ</span></a>
+            </li>              
 
             <!-- Nav Item - Employess and Customer -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                <a class="nav-link" href="employee_manageCus.php">
                     <i class="fas fa-fw fa-user"></i>
-                    <span>ข้อมูลพนักงานและลูกค้า</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">จัดการข้อมูล</h6>
-                        <a class="collapse-item" href="admin_manageEmp.php">พนักงาน</a>
-                        <a class="collapse-item" href="admin_manageCus.php">ลูกค้า</a>
-                    </div>
-                </div>
-            </li>
+                    <span>ข้อมูลลูกค้า</span></a>
+            </li> 
 
             <!-- Nav Item - Product -->
             <li class="nav-item">
@@ -150,9 +102,9 @@ if (isset($_REQUEST['btn_update'])) {
                 <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">จัดการข้อมูลสินค้า</h6>
-                        <a class="collapse-item" href="admin_product.php">ข้อมูลสินค้า</a>
-                        <a class="collapse-item" href="admin_stock.php">ข้อมูลสต็อกสินค้า</a>
-                        <a class="collapse-item" href="admin_order.php">ข้อมูลการขาย</a>
+                        <a class="collapse-item" href="employee_product.php">ข้อมูลสินค้า</a>
+                        <a class="collapse-item" href="employee_stock.php">ข้อมูลสต็อกสินค้า</a>
+                        <a class="collapse-item" href="">ข้อมูลการขาย</a>
                     </div>
                 </div>
             </li>
@@ -170,13 +122,6 @@ if (isset($_REQUEST['btn_update'])) {
                 <a class="nav-link" href="charts.php">
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Charts</span></a>
-            </li>
-
-            <!-- Nav Item - Tables -->
-            <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
             </li>
 
             <!-- Divider -->
@@ -204,6 +149,13 @@ if (isset($_REQUEST['btn_update'])) {
                         <i class="fa fa-bars"></i>
                     </button>
 
+                    <!-- Topbar Search -->
+                    <form method="POST" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" action="">
+                        <div>
+                            <input type="text" name="srh" class="form-control bg-light border-0 small" placeholder="Search for...">.
+                            <input type="submit" name="search" class="btn btn-primary">
+                        </div>
+                    </form>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -234,6 +186,8 @@ if (isset($_REQUEST['btn_update'])) {
                         <!-- Nav Item - User Information -->
 
                         <li class="nav-item dropdown no-arrow">
+                            <tbody>
+                            </tbody>
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>
                                 </tbody>
@@ -259,63 +213,81 @@ if (isset($_REQUEST['btn_update'])) {
                 </nav>
                 <!-- End of Topbar -->
 
-                <div class="container">
-                    <br>
-                    <form action="" method="POST" class="form-horizontal" enctype="multipart/form-data">
-                        <?php {
-                            $id = $_REQUEST['update_id'];
-                            $select_stmt = $conn->prepare('SELECT * FROM products WHERE id = :id');
-                            $select_stmt->bindParam(':id', $id);
-                            $select_stmt->execute();
-                            $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+                <div class="container-fluid">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">Orders</li>
+                            <li class="breadcrumb-item active" aria-current="page">Overview</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h2">รายการสั่งซื้อ</h1>
+                    <div class="row">
+                        <div class="col-12 col-xl-20 mb-4 mb-lg-0">
+                            <div class="card">
+                                <h5 class="card-header">Orders List</h5>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col" style="text-align: center">เลขที่ใบเสร็จ</th>
+                                                    <th scope="col" style="text-align: center">วันที่สั่งซื้อ</th>
+                                                    <th scope="col" style="text-align: center">ชื่อลูกค้า</th>
+                                                    <th scope="col" style="text-align: center">รายการที่สั่ง</th>
+                                                    <th scope="col" style="text-align: center">ราคา (บาท)</th>
+                                                    <th scope="col" style="text-align: center"></th>
+                                                    <th scope="col" style="text-align: center"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php
+                                                    if (isset($_POST['search'])) {
 
-                        ?>
-                            <h2 style="text-align:center">แก้ไขข้อมูลสินค้า</h2>
-                            <div class="mb-3">
-                                <label for="product_num" class="form-label">รหัสสินค้า</label>
-                                <input type="text" class="form-control" name="product_num" aria-describebdy="product_num" value="<?php echo $row['product_num']; ?>" placeholder="<?php echo $row['product_num']; ?>" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="name" class="form-label">ชื่อสินค้า</label>
-                                <input type="text" class="form-control" name="name" aria-describebdy="name" value="<?php echo $row['name']; ?>" placeholder="<?php echo $row['name']; ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label for="description" class="form-label">คำอธิบาย</label>
-                                <input type="text" class="form-control" name="description" aria-describebdy="description" value="<?php echo $row['description']; ?>" placeholder="<?php echo $row['description']; ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label for="type" class="form-label">ประเภท</label>
-                                <input type="text" class="form-control" name="type" aria-describebdy="type" value="<?php echo $row['type']; ?>" placeholder="<?php echo $row['type']; ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label for="price" class="form-label">ราคา</label>
-                                <input type="text" class="form-control" name="price" aria-describebdy="price" value="<?php echo $row['price']; ?>" placeholder="<?php echo $row['price']; ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label for="amount" class="form-label">จำนวนที่เหลือ</label>
-                                <input type="text" class="form-control" name="amount" aria-describebdy="amount" value="<?php echo $row['amount']; ?>" placeholder="<?php echo $row['amount']; ?>" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="status" class="form-label">สถานะ</label>
-                                <input type="text" class="form-control" name="status" aria-describebdy="status" value="<?php echo $row['status']; ?>" placeholder="<?php echo $row['status']; ?>" readonly>
-                            </div>
-                            <div>
-                                <label for="file" class="form-label">รูปภาพ</label>
-                                <div>
-                                    <input type="file" name="file" class="form-control" value="<?php echo $row['image']; ?>">
-                                    <br>
-                                    <p><img src="upload/<?php echo $row['image'] ?>" height="100px" width="100px" alt=""></p>
+                                                        $srh = $_POST['srh'];
+
+                                                        $check_data = $conn->prepare("SELECT * FROM orders WHERE orders_num = '$srh' OR cus_id = '$srh' OR total = '$srh' ORDER BY date DESC");
+                                                        $check_data->execute();
+                                                    } else {
+                                                        $check_data = $conn->prepare("SELECT * FROM orders ORDER BY date DESC");
+                                                        $check_data->execute();
+
+                                                        
+                                                    }
+
+
+                                                while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
+                                                ?>
+                                                    <form action="admin_user.php" method="POST">
+                                                        <tr>
+                                                            <td style="text-align: center"><?php echo $row['orders_num'];?></td>
+                                                            <td style="text-align: center"><?php echo $row['date'];?></td>
+                                                            <td style="text-align: center"><?php 
+                                                            $check_cus = $conn->prepare("SELECT * FROM customers WHERE id = $row[cus_id]");
+                                                            $check_cus->execute();
+                                                            $r = $check_cus->fetch(PDO::FETCH_ASSOC);
+                                                            $cus_name = $r['firstname']." ".$r['lastname'];
+
+                                                            echo $cus_name;?></td>
+                                                            <td style="text-align: center"><?php echo iconv_substr($row['description'],0,30,'UTF-8')."...";?></td>
+                                                            <td style="text-align: center"><?php echo number_format($row['total'],2);?></td>
+                                                            <td><a href="employee_order_detail.php?view_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-success">View</a></td>
+                                                            <td><a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
+                                                        </tr>
+                                                    </form>
+                                                <?php } ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <a href="" class="btn btn-block btn-light">View All</a>
                                 </div>
-                            </div>  
-                            <br>                           
-                            <div>
-                                <input type="submit" name="btn_update" class="btn btn-success" value="แก้ไขข้อมูล">
-                                <a href="admin_product.php" class="btn btn-danger">ยกเลิก</a>
                             </div>
-                        <?php } ?>
-
-                    </form>
+                        </div>
+                    </div>
                 </div>
+
+
+
+                
 
                 <!-- Footer -->
                 <footer class="sticky-footer bg-white">
@@ -355,7 +327,7 @@ if (isset($_REQUEST['btn_update'])) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>      
 
         <!-- Bootstrap core JavaScript-->
         <script src="vendor/jquery/jquery.min.js"></script>

@@ -1,74 +1,75 @@
-<?php
+<?php 
 
-session_start();
-require_once 'config/db.php';
-if (!isset($_SESSION['admin_login'])) {
-    header('location: index.php');
-}
-
-if (isset($_REQUEST['update_id'])) {
-    try {
-        $id = $_REQUEST['update_id'];
-        $select_stmt = $conn->prepare('SELECT * FROM products WHERE id = :id');
-        $select_stmt->bindParam(':id', $id);
-        $select_stmt->execute();
-        $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        $e->getMessage();
+    session_start();
+    require_once 'config/db.php';
+    if (!isset($_SESSION['employee_login'])) {
+        header('location: index.php');
     }
-}
-
-if (isset($_REQUEST['btn_update'])) {
-    try {
-        $name = $_REQUEST['name'];
-        $description = $_REQUEST['description'];
-        $type = $_REQUEST['type'];
-        $price = $_REQUEST['price'];
-        $amount = $_REQUEST['amount'];
-        $status = $_REQUEST['status'];
-        $image_file = $_FILES['file']['name'];
-        $itype = $_FILES['file']['type'];
-        $size = $_FILES['file']['size'];
-        $temp = $_FILES['file']['tmp_name'];
-
-        $path = "upload/" . $image_file;  //set upload folder path
-        $direc = "upload/";
-
-        if ($image_file) {
-            if ($itype == "image/jpg" || $itype == "image/jpeg" || $itype == "image/png" || $itype == "image/gif") {
-                if (!file_exists($path)) {  // check file not exist in your upload folder path
-                    if ($size < 5000000) {  // check file size
-                        unlink($direc.$row['image']);
-                        move_uploaded_file($temp, 'upload/'.$image_file); //move upload file temperary to upload folder
+    if (isset($_REQUEST['update_id'])) {
+        try {
+            $id = $_REQUEST['update_id'];
+            $select_stmt = $conn->prepare('SELECT * FROM products WHERE id = :id');
+            $select_stmt->bindParam(':id', $id);
+            $select_stmt->execute();
+            $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            $e->getMessage();
+        }
+    }
+    
+    if (isset($_REQUEST['btn_update'])) {
+        try {
+            $name = $_REQUEST['name'];
+            $description = $_REQUEST['description'];
+            $type = $_REQUEST['type'];
+            $price = $_REQUEST['price'];
+            $amount = $_REQUEST['amount'];
+            $status = $_REQUEST['status'];
+            $image_file = $_FILES['file']['name'];
+            $itype = $_FILES['file']['type'];
+            $size = $_FILES['file']['size'];
+            $temp = $_FILES['file']['tmp_name'];
+    
+            $path = "upload/" . $image_file;  //set upload folder path
+            $direc = "upload/";
+    
+            if ($image_file) {
+                if ($itype == "image/jpg" || $itype == "image/jpeg" || $itype == "image/png" || $itype == "image/gif") {
+                    if (!file_exists($path)) {  // check file not exist in your upload folder path
+                        if ($size < 5000000) {  // check file size
+                            unlink($direc.$row['image']);
+                            move_uploaded_file($temp, 'upload/'.$image_file); //move upload file temperary to upload folder
+                        } else {
+                            $errorMsg = "Your file too large.";
+                        }
                     } else {
-                        $errorMsg = "Your file too large.";
+                        $errorMsg = "File already exists.";
                     }
                 } else {
-                    $errorMsg = "File already exists.";
+                    $errorMsg = "Upload JPG, JPEG, PNG and GIF file formate.";
                 }
             } else {
-                $errorMsg = "Upload JPG, JPEG, PNG and GIF file formate.";
+                $image_file = $row['image'];
             }
-        } else {
-            $image_file = $row['image'];
+    
+            $update_stmt = $conn->prepare("UPDATE products SET name = :name, description = :description, type = :type, price = :price, amount = :amount, status = :status, image = :fimage WHERE id = :id");
+            $update_stmt->bindParam(':name', $name);
+            $update_stmt->bindParam(':description', $description);
+            $update_stmt->bindParam(':type', $type);
+            $update_stmt->bindParam(':price', $price);
+            $update_stmt->bindParam(':amount', $amount);
+            $update_stmt->bindParam(':status', $status);
+            $update_stmt->bindParam(':fimage', $image_file);
+            $update_stmt->bindParam(':id', $id);
+            $update_stmt->execute();
+    
+            header("location: employee_product.php");
+        } catch (PDOException $e) {
+            $e->getMessage();
         }
-
-        $update_stmt = $conn->prepare("UPDATE products SET name = :name, description = :description, type = :type, price = :price, amount = :amount, status = :status, image = :fimage WHERE id = :id");
-        $update_stmt->bindParam(':name', $name);
-        $update_stmt->bindParam(':description', $description);
-        $update_stmt->bindParam(':type', $type);
-        $update_stmt->bindParam(':price', $price);
-        $update_stmt->bindParam(':amount', $amount);
-        $update_stmt->bindParam(':status', $status);
-        $update_stmt->bindParam(':fimage', $image_file);
-        $update_stmt->bindParam(':id', $id);
-        $update_stmt->execute();
-
-        header("location: admin_product.php");
-    } catch (PDOException $e) {
-        $e->getMessage();
     }
-}
+    
+   
 ?>
 
 <!DOCTYPE html>
@@ -78,7 +79,7 @@ if (isset($_REQUEST['btn_update'])) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Home Page</title>
+    <title>Employee Home Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://unpkg.com/feather-icons"></script>
     <!-- Place this tag in your head or just before your close body tag. -->
@@ -101,11 +102,11 @@ if (isset($_REQUEST['btn_update'])) {
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">POS <sup>Admin</sup></div>
+                <div class="sidebar-brand-text mx-3">POS <sup>Employee</sup></div>
             </a>
 
             <!-- Divider -->
@@ -113,7 +114,7 @@ if (isset($_REQUEST['btn_update'])) {
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="admin.php">
+                <a class="nav-link" href="Employee.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
             </li>
@@ -121,25 +122,20 @@ if (isset($_REQUEST['btn_update'])) {
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Interface
-            </div>
+
+            <!-- Nav Item - Order -->
+            <li class="nav-item">
+                <a class="nav-link" href="employee_create_order.php">
+                    <i class="fas fa-fw fa-dollar-sign"></i>
+                    <span>ทำรายการสั่งซื้อ</span></a>
+            </li>              
 
             <!-- Nav Item - Employess and Customer -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                <a class="nav-link" href="employee_manageCus.php">
                     <i class="fas fa-fw fa-user"></i>
-                    <span>ข้อมูลพนักงานและลูกค้า</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">จัดการข้อมูล</h6>
-                        <a class="collapse-item" href="admin_manageEmp.php">พนักงาน</a>
-                        <a class="collapse-item" href="admin_manageCus.php">ลูกค้า</a>
-                    </div>
-                </div>
-            </li>
+                    <span>ข้อมูลลูกค้า</span></a>
+            </li> 
 
             <!-- Nav Item - Product -->
             <li class="nav-item">
@@ -150,9 +146,9 @@ if (isset($_REQUEST['btn_update'])) {
                 <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">จัดการข้อมูลสินค้า</h6>
-                        <a class="collapse-item" href="admin_product.php">ข้อมูลสินค้า</a>
-                        <a class="collapse-item" href="admin_stock.php">ข้อมูลสต็อกสินค้า</a>
-                        <a class="collapse-item" href="admin_order.php">ข้อมูลการขาย</a>
+                        <a class="collapse-item" href="employee_product.php">ข้อมูลสินค้า</a>
+                        <a class="collapse-item" href="employee_stock.php">ข้อมูลสต็อกสินค้า</a>
+                        <a class="collapse-item" href="">ข้อมูลการขาย</a>
                     </div>
                 </div>
             </li>
@@ -170,13 +166,6 @@ if (isset($_REQUEST['btn_update'])) {
                 <a class="nav-link" href="charts.php">
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Charts</span></a>
-            </li>
-
-            <!-- Nav Item - Tables -->
-            <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
             </li>
 
             <!-- Divider -->
@@ -203,6 +192,7 @@ if (isset($_REQUEST['btn_update'])) {
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
+
 
 
                     <!-- Topbar Navbar -->
@@ -234,6 +224,8 @@ if (isset($_REQUEST['btn_update'])) {
                         <!-- Nav Item - User Information -->
 
                         <li class="nav-item dropdown no-arrow">
+                            <tbody>
+                            </tbody>
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>
                                 </tbody>
@@ -258,7 +250,6 @@ if (isset($_REQUEST['btn_update'])) {
 
                 </nav>
                 <!-- End of Topbar -->
-
                 <div class="container">
                     <br>
                     <form action="" method="POST" class="form-horizontal" enctype="multipart/form-data">
@@ -310,12 +301,16 @@ if (isset($_REQUEST['btn_update'])) {
                             <br>                           
                             <div>
                                 <input type="submit" name="btn_update" class="btn btn-success" value="แก้ไขข้อมูล">
-                                <a href="admin_product.php" class="btn btn-danger">ยกเลิก</a>
+                                <a href="employee_product.php" class="btn btn-danger">ยกเลิก</a>
                             </div>
                         <?php } ?>
 
                     </form>
                 </div>
+                
+
+
+                
 
                 <!-- Footer -->
                 <footer class="sticky-footer bg-white">
@@ -355,7 +350,7 @@ if (isset($_REQUEST['btn_update'])) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>      
 
         <!-- Bootstrap core JavaScript-->
         <script src="vendor/jquery/jquery.min.js"></script>

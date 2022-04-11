@@ -7,11 +7,11 @@
     } 
 
     if (isset($_POST['addstock'])) {
-        $id = $_POST['id'];
+        $product_num = $_POST['id'];
         $amount = $_POST['amount'];
         
-        $select_stmt = $conn->prepare('SELECT * FROM products WHERE id = :id');
-        $select_stmt->bindParam(':id', $id);
+        $select_stmt = $conn->prepare('SELECT * FROM products WHERE product_num = :product_num');
+        $select_stmt->bindParam(':product_num', $product_num);
         $select_stmt->execute();
         $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -25,10 +25,10 @@
         $amount = ($_POST['amount'] + $row['amount']);
         $status = "พร้อมขาย";
 
-        $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE id = :id");
+        $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE product_num = :product_num");
         $up_stmt->bindParam(":amount", $amount);
         $up_stmt->bindParam(":status", $status);
-        $up_stmt->bindParam(":id", $id);
+        $up_stmt->bindParam(":product_num", $product_num);
         $up_stmt->execute();
         header("location: admin_product.php"); 
 

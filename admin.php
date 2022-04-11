@@ -65,7 +65,7 @@ if (!isset($_SESSION['admin_login'])) {
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Interface
+                ข้อมูล
             </div>
 
             <!-- Nav Item - Employess and Customer -->
@@ -100,19 +100,7 @@ if (!isset($_SESSION['admin_login'])) {
             </li>
 
             <!-- Divider -->
-            <hr class="sidebar-divider">
-
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Addons
-            </div>
-
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
-                <a class="nav-link" href="charts.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>
+            <hr class="sidebar-divider">            
 
 
             <!-- Divider -->
@@ -141,16 +129,6 @@ if (!isset($_SESSION['admin_login'])) {
                     </button>
 
                     <!-- Topbar Search -->
-                    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -219,8 +197,25 @@ if (!isset($_SESSION['admin_login'])) {
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text font-weight-bold text-primary text-uppercase mb-1">
-                                                ยอดการขาย (Monthly)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
+                                                ยอดการขาย (Monthly) <br><?php
+                                            date_default_timezone_set("Asia/Bangkok");
+                                            $mydate=getdate(date("U"));
+                                            $date = "$mydate[month] $mydate[year]";
+                                            echo $date; ?></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php 
+                                            date_default_timezone_set("Asia/Bangkok");
+                                            $month = date("m");
+                                            $year = date("Y");
+                                            $check_data = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$month' AND year(date) = '$year' ");
+                                            $check_data->execute();
+                                            $d_count = $check_data->rowCount();
+                                            $total = 0;
+                                            while($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
+                                                $total = $total + $row['total'];
+                                                
+                                            }                                                                               
+                                            echo number_format($total,2)." บาท" ; 
+                                            ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -236,9 +231,24 @@ if (!isset($_SESSION['admin_login'])) {
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text font-weight-bold text-success text-uppercase mb-1">
-                                                ยอดการขายวันนี้ </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
+                                            <div class="text font-weight-bold text-success text-uppercase mb-1">ยอดการขายวันนี้ <br><?php
+                                            date_default_timezone_set("Asia/Bangkok");
+                                            $mydate=getdate(date("U"));
+                                            $date = "$mydate[mday] $mydate[month] $mydate[year]";
+                                            echo $date; ?> </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php 
+                                            date_default_timezone_set("Asia/Bangkok");
+                                            $datetd = date("Y-m-d");
+                                            $check_data = $conn->prepare("SELECT date,total FROM orders WHERE date(date) = '$datetd' ");
+                                            $check_data->execute();
+                                            $d_count = $check_data->rowCount();                                           
+                                            $total = 0;
+                                            while($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
+                                                $total = $total + $row['total'];
+                                                
+                                            }                                                                               
+                                            echo number_format($total,2)." บาท" ;                                   
+                                            ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -256,6 +266,7 @@ if (!isset($_SESSION['admin_login'])) {
                                         <div class="col mr-2">
                                             <div class="text font-weight-bold text-info text-uppercase mb-1">จำนวนลูกค้า
                                             </div>
+                                            <br>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800"><?php
                                             
                                             $check_data = $conn->prepare("SELECT * FROM customers ");
@@ -279,6 +290,7 @@ if (!isset($_SESSION['admin_login'])) {
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text font-weight-bold text-warning text-uppercase mb-1">จำนวนพนักงาน</div>
+                                            <br>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800"><?php
                                             
                                             $check_data = $conn->prepare("SELECT * FROM users WHERE urole = 'Employee'");
@@ -305,24 +317,69 @@ if (!isset($_SESSION['admin_login'])) {
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
+                                    <h6 class="m-0 font-weight-bold text-primary">รายการสั่งซื้อวันนี้</h6>
+                                    <form method="POST" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" action="">
+                                        <div>
+                                            <input type="text" name="srh" class="form-control bg-light border-0 small" placeholder="Search for...">.
+                                            <input type="submit" name="search" class="btn btn-primary">
                                         </div>
-                                    </div>
+                                    </form>
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body">
-                                    <div class="chart-area">
-                                        <canvas id="myAreaChart"></canvas>
+                                <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col" style="text-align: center">เลขที่ใบเสร็จ</th>
+                                                    <th scope="col" style="text-align: center">วันที่สั่งซื้อ</th>
+                                                    <th scope="col" style="text-align: center">ชื่อลูกค้า</th>
+                                                    <th scope="col" style="text-align: center">ราคา (บาท)</th>
+                                                    <th scope="col" style="text-align: center"></th>
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php
+                                                    if (isset($_POST['search'])) {
+
+                                                        $srh = $_POST['srh'];
+                                                        date_default_timezone_set("Asia/Bangkok");
+                                                        $datetd = date("Y-m-d");                                                       
+                                                        $check_data = $conn->prepare("SELECT * FROM orders WHERE orders_num = '$srh' OR cus_id = '$srh' OR total = '$srh' 
+                                                        AND date(date) = '$datetd' ORDER BY date DESC");
+                                                        $check_data->execute();
+                                                    } else {
+                                                        date_default_timezone_set("Asia/Bangkok");
+                                                        $datetd = date("Y-m-d");
+                                                        $check_data = $conn->prepare("SELECT * FROM orders WHERE date(date) = '$datetd' ");
+                                                        $check_data->execute();
+
+                                                        
+                                                    }
+
+
+                                                while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
+                                                ?>
+                                                    <form action="admin_user.php" method="POST">
+                                                        <tr>
+                                                            <td style="text-align: center"><?php echo $row['orders_num'];?></td>
+                                                            <td style="text-align: center"><?php echo $row['date'];?></td>
+                                                            <td style="text-align: center"><?php 
+                                                            $check_cus = $conn->prepare("SELECT * FROM customers WHERE id = $row[cus_id]");
+                                                            $check_cus->execute();
+                                                            $r = $check_cus->fetch(PDO::FETCH_ASSOC);
+                                                            $cus_name = $r['firstname']." ".$r['lastname'];
+
+                                                            echo $cus_name;?></td>                               
+                                                            <td style="text-align: center"><?php echo number_format($row['total'],2);?></td>
+                                                            <td><a href="admin_order_detail.php?view_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-success">View</a></td>
+                                                        </tr>
+                                                    </form>
+                                                <?php } ?>
+                                            </tbody>
+                                        </table>
+                                        <a href="" class="btn btn-block btn-light">View All</a>
                                     </div>
                                 </div>
                             </div>

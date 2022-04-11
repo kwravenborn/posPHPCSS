@@ -4,6 +4,27 @@ require_once 'config/db.php';
 if (!isset($_SESSION['admin_login'])) {
     header('location: index.php');
 }
+
+if (isset($_REQUEST['delete_id'])) {
+    $id = $_REQUEST['delete_id'];
+
+    $select_stmt = $conn->prepare('SELECT * FROM orders WHERE id = :id');
+    $select_stmt->bindParam(':id', $id);
+    $select_stmt->execute();
+    $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+
+    $delete_stmt = $conn->prepare('DELETE FROM orders WHERE id = :id');
+    $delete_stmt->bindParam(':id', $id);
+    $delete_stmt->execute();
+
+    $delete_dt = $conn->prepare('DELETE FROM order_detail WHERE orders_num = :orders_num');
+    $delete_dt->bindParam(':orders_num', $row['orders_num']);
+    $delete_dt->execute();
+
+    header("location: admin_order.php");
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -58,7 +79,7 @@ if (!isset($_SESSION['admin_login'])) {
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Interface
+                ข้อมูล
             </div>
 
             <!-- Nav Item - Employess and Customer -->
@@ -95,24 +116,7 @@ if (!isset($_SESSION['admin_login'])) {
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Addons
-            </div>
-
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
-                <a class="nav-link" href="charts.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>
-
-            <!-- Nav Item - Tables -->
-            <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
-            </li>
+            
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -178,18 +182,6 @@ if (!isset($_SESSION['admin_login'])) {
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>
-                                    <?php
-                                    $check_data = $conn->prepare("SELECT * FROM users");
-                                    $check_data->execute();
-
-                                    while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                    ?>
-                                        <form action="admin_Emp.php" method="POST">
-                                            <tr>
-                                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $row['firstname']; ?> <?php echo $row['lastname']; ?></span>
-                                            </tr>
-                                        </form>
-                                    <?php } ?>
                                 </tbody>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
 
@@ -232,16 +224,13 @@ if (!isset($_SESSION['admin_login'])) {
                                         <table class="table">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col" style="text-align: center">ID</th>
-                                                    <th scope="col" style="text-align: center">วันที่</th>
-                                                    <th scope="col" style="text-align: center">ชื่อสินค้า</th>
-                                                    <th scope="col" style="text-align: center">ชื่อลูกค้า</th>
-                                                    <th scope="col" style="text-align: center">เบอร์โทรศัพท์</th>
-                                                    <th scope="col" style="text-align: center">ที่อยู่</th>
-                                                    <th scope="col" style="text-align: center">อีเมล</th>
-                                                    <th scope="col" style="text-align: center">พนักงานขาย</th>
                                                     <th scope="col" style="text-align: center">เลขที่ใบเสร็จ</th>
-
+                                                    <th scope="col" style="text-align: center">วันที่สั่งซื้อ</th>
+                                                    <th scope="col" style="text-align: center">ชื่อลูกค้า</th>
+                                                    <th scope="col" style="text-align: center">รายการที่สั่ง</th>
+                                                    <th scope="col" style="text-align: center">ราคา (บาท)</th>
+                                                    <th scope="col" style="text-align: center"></th>
+                                                    <th scope="col" style="text-align: center"></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -249,11 +238,14 @@ if (!isset($_SESSION['admin_login'])) {
                                                     if (isset($_POST['search'])) {
 
                                                         $srh = $_POST['srh'];
-                                                        $check_data = $conn->prepare("SELECT * FROM orders");
+
+                                                        $check_data = $conn->prepare("SELECT * FROM orders WHERE orders_num = '$srh' OR cus_id = '$srh' OR total = '$srh' ORDER BY date DESC");
                                                         $check_data->execute();
                                                     } else {
-                                                        $check_data = $conn->prepare("SELECT * FROM orders");
+                                                        $check_data = $conn->prepare("SELECT * FROM orders ORDER BY date DESC");
                                                         $check_data->execute();
+
+                                                        
                                                     }
 
 
@@ -261,16 +253,18 @@ if (!isset($_SESSION['admin_login'])) {
                                                 ?>
                                                     <form action="admin_user.php" method="POST">
                                                         <tr>
-                                                            <th scope="row"></th>
-                                                            <td style="text-align: center"></td>
-                                                            <td style="text-align: center"></td>
-                                                            <td style="text-align: center"></td>
-                                                            <td style="text-align: center"></td>
-                                                            <td style="text-align: center"></td>
-                                                            <td style="text-align: center"></td>
-                                                            <td style="text-align: center"></td>
-                                                            <td style="text-align: center"></td>
-                                                            <td><a href="" class="btn btn-sm btn-primary">Edit</a></td>
+                                                            <td style="text-align: center"><?php echo $row['orders_num'];?></td>
+                                                            <td style="text-align: center"><?php echo $row['date'];?></td>
+                                                            <td style="text-align: center"><?php 
+                                                            $check_cus = $conn->prepare("SELECT * FROM customers WHERE id = $row[cus_id]");
+                                                            $check_cus->execute();
+                                                            $r = $check_cus->fetch(PDO::FETCH_ASSOC);
+                                                            $cus_name = $r['firstname']." ".$r['lastname'];
+
+                                                            echo $cus_name;?></td>
+                                                            <td style="text-align: center"><?php echo iconv_substr($row['description'],0,30,'UTF-8')."...";?></td>
+                                                            <td style="text-align: center"><?php echo number_format($row['total'],2);?></td>
+                                                            <td><a href="admin_order_detail.php?view_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-success">View</a></td>
                                                             <td><a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
                                                         </tr>
                                                     </form>

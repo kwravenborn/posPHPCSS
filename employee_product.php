@@ -34,7 +34,7 @@
         $itype = $_FILES['file']['type'];
         $size = $_FILES['file']['size'];
         $temp = $_FILES['file']['tmp_name'];
-
+        $product_num = rand(0,9999)."1111".rand(0,99999);
         $path = "upload/" . $image_file;  //set upload folder path
 
         if ($itype == "image/jpg" || $itype == "image/jpeg" || $itype == "image/png" || $itype == "image/gif") {
@@ -53,30 +53,52 @@
 
         
         try {
-            $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type) 
-            VALUES(:name, :description, :price, :amount, :status, :image, :type)");
-            $stmt->bindParam(":name", $name);
-            $stmt->bindParam(":description", $description);
-            $stmt->bindParam(":price", $price);
-            $stmt->bindParam(":amount", $amount);
-            $stmt->bindParam(":status", $status);
-            $stmt->bindParam(":type", $type);
-            $stmt->bindParam(":image", $image_file);
-            $stmt->execute();
-            $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
-            header("location: employee_product.php");                
+            $check_productnum = $conn->prepare("SELECT product_num FROM products WHERE product_num = :product_num");
+            $check_productnum->bindParam(":product_num", $product_num);
+            $check_productnum->execute();
+            $row = $check_productnum->fetch(PDO::FETCH_ASSOC);
 
+            if($row['product_num'] == $product_num){
+                $product_num = rand(0,9999).rand(1000,9999).rand(0,99999);
+                $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type, product_num) 
+                VALUES(:name, :description, :price, :amount, :status, :image, :type ,:product_num)");
+                $stmt->bindParam(":name", $name);
+                $stmt->bindParam(":description", $description);
+                $stmt->bindParam(":price", $price);
+                $stmt->bindParam(":amount", $amount);
+                $stmt->bindParam(":status", $status);
+                $stmt->bindParam(":type", $type);
+                $stmt->bindParam(":product_num", $product_num);
+                $stmt->bindParam(":image", $image_file);
+                $stmt->execute();
+                $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
+                header("location: employee_product.php"); 
+            } else {
+                $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type, product_num) 
+                VALUES(:name, :description, :price, :amount, :status, :image, :type ,:product_num)");
+                $stmt->bindParam(":name", $name);
+                $stmt->bindParam(":description", $description);
+                $stmt->bindParam(":price", $price);
+                $stmt->bindParam(":amount", $amount);
+                $stmt->bindParam(":status", $status);
+                $stmt->bindParam(":type", $type);
+                $stmt->bindParam(":product_num", $product_num);
+                $stmt->bindParam(":image", $image_file);
+                $stmt->execute();
+                $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
+                header("location: employee_product.php"); 
+            }
         } catch (PDOException $e) {
                 echo $e->getMessage();
         }
     }
 
     if (isset($_POST['addstock'])) {
-        $id = $_POST['id'];
+        $product_num = $_POST['id'];
         $amount = $_POST['amount'];
         
-        $select_stmt = $conn->prepare('SELECT * FROM products WHERE id = :id');
-        $select_stmt->bindParam(':id', $id);
+        $select_stmt = $conn->prepare('SELECT * FROM products WHERE product_num = :product_num');
+        $select_stmt->bindParam(':product_num', $product_num);
         $select_stmt->execute();
         $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -90,10 +112,10 @@
         $amount = ($_POST['amount'] + $row['amount']);
         $status = "พร้อมขาย";
 
-        $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE id = :id");
+        $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE product_num = :product_num");
         $up_stmt->bindParam(":amount", $amount);
         $up_stmt->bindParam(":status", $status);
-        $up_stmt->bindParam(":id", $id);
+        $up_stmt->bindParam(":product_num", $product_num);
         $up_stmt->execute();
         header("location: employee_product.php"); 
 
@@ -176,7 +198,7 @@
                         <h6 class="collapse-header">จัดการข้อมูลสินค้า</h6>
                         <a class="collapse-item" href="employee_product.php">ข้อมูลสินค้า</a>
                         <a class="collapse-item" href="employee_stock.php">ข้อมูลสต็อกสินค้า</a>
-                        <a class="collapse-item" href="">ข้อมูลการขาย</a>
+                        <a class="collapse-item" href="employee_order.php">ข้อมูลการขาย</a>
                     </div>
                 </div>
             </li>
@@ -259,38 +281,9 @@
 
                         <li class="nav-item dropdown no-arrow">
                             <tbody>
-                                <?php
-                                $check_data = $conn->prepare("SELECT * FROM customers");
-                                $check_data->execute();
-
-                                while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                ?>
-                                    <!-- <tr>
-                                    <th scope="row"><?php echo $row['id']; ?></th>
-                                    <td><?php echo $row['firstname']; ?></td>
-                                    <td><?php echo $row['lastname']; ?></td>
-                                    <td><?php echo $row['address']; ?></td>
-                                    <td><?php echo $row['phone']; ?></td>
-                                    <td><?php echo $row['email']; ?></td>
-                                    <td><?php echo $row['birthday']; ?></td>
-                                    <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
-                                </tr> -->
-                                <?php } ?>
                             </tbody>
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>
-                                    <?php
-                                    $check_data = $conn->prepare("SELECT * FROM users");
-                                    $check_data->execute();
-
-                                    while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                    ?>
-                                        <form action="" method="POST">
-                                            <tr>
-                                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $row['firstname']; ?> <?php echo $row['lastname']; ?></span>
-                                            </tr>
-                                        </form>
-                                    <?php } ?>
                                 </tbody>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
 
@@ -463,7 +456,7 @@
                                         <table class="table">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col" style="text-align: center">ID</th>
+                                                    <th scope="col" style="text-align: center">รหัสสินค้า</th>
                                                     <th scope="col" style="text-align: center"></th>
                                                     <th scope="col" style="text-align: center">ชื่อสินค้า</th>
                                                     <th scope="col" style="text-align: center">คำอธิบาย</th>
@@ -479,7 +472,7 @@
 
                                                         $srh = $_POST['srh'];
                                                         $check_data = $conn->prepare("SELECT * FROM products WHERE name = '$srh' OR description = '$srh' 
-                                                        OR type = '$srh' OR price = '$srh' OR status = '$srh' OR id = '$srh'");
+                                                        OR type = '$srh' OR price = '$srh' OR status = '$srh' OR product_num = '$srh' OR id = '$srh'");
                                                         $check_data->execute();
                                                     } else {
                                                         $check_data = $conn->prepare("SELECT * FROM products");
@@ -490,13 +483,17 @@
                                                 ?>
                                                     <form action="" method="POST">
                                                         <tr>
-                                                            <th scope="row"><?php echo $row['id']; ?></th>
+                                                            <th scope="row"><?php echo $row['product_num']; ?></th>
                                                             <td style="text-align: center"><img src="upload/<?php echo $row['image']; ?>" width="100px" height="100px" alt=""></td>
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
-                                                            <td style="text-align: center"><?php echo $row['description']; ?></td>
+                                                            <td style="text-align: center"><?php echo iconv_substr($row['description'],0,50,'UTF-8')."..."; ?></td>
                                                             <td style="text-align: center"><?php echo $row['type']; ?></td>
                                                             <td style="text-align: center"><?php echo number_format($row['price']); ?></td>
-                                                            <td style="text-align: center"><?php echo $row['amount']; ?></td>
+                                                            <td style="text-align: center"><?php if($row['amount'] == 0){
+                                                                echo "หมด";
+                                                            } else {
+                                                                echo $row['amount'];
+                                                            }?></td>
                                                             <td style="text-align: center;color:<?php 
                                                                 if ($row['status'] == "พร้อมขาย") {
                                                                     echo "green";

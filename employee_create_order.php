@@ -37,6 +37,69 @@
                     $_SESSION["cart_item"] = $itemArray;
                 }
             break;
+            case "sale";
+            $ctitem = array($_SESSION["cart_item"]);
+            $count = 0;
+            $orders_num = rand(0,9999)."2222".rand(0,99999);
+            $cus_id = 1;
+            $totalPrice = 0;
+            $description = "";
+
+            foreach ($ctitem as $ct) {
+                $count+= count($ct);
+            }
+            
+            for($i = 0; $i < $count; $i++){
+
+                $item = ($ctitem[0][$i]);
+                $name = $item['name'];
+                $qty = $item['quantity'];
+                $price = $item['price'];
+                $image = $item['image'];
+                $ttprice = $qty * $price;
+                $totalPrice = $totalPrice + $ttprice;
+
+                if($i == 0){
+                    $description = $item['name']." (".$item['quantity'].")";
+                } else {
+                    $description = $description.", ".$item['name']." (".$item['quantity'].")";
+                }
+                
+                $data_product = $conn->prepare("SELECT * FROM products WHERE name = '$name'");
+                $data_product->execute();
+                $datapd = $data_product->fetch(PDO::FETCH_ASSOC);
+                $datapd['amount'] = $datapd['amount'] - $qty;
+                if($datapd['amount'] == 0){
+                    $datapd['status'] = "ไม่พร้อมขาย";
+                }
+
+                $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE name = :name");
+                $up_stmt->bindParam(":amount", $datapd['amount']);
+                $up_stmt->bindParam(":status", $datapd['status']);
+                $up_stmt->bindParam(":name", $name);
+                $up_stmt->execute();
+
+                $stmt = $conn->prepare("INSERT INTO order_detail(name, qty, price, cus_id, emp_id, image, orders_num) 
+                VALUES(:name, :qty, :price, :cus_id, :emp_id, :image, :orders_num)");
+                $stmt->bindParam(":name", $name);
+                $stmt->bindParam(":qty", $qty);
+                $stmt->bindParam(":price", $ttprice);
+                $stmt->bindParam(":cus_id", $cus_id);
+                $stmt->bindParam(":emp_id", $cus_id);
+                $stmt->bindParam(":image", $image);
+                $stmt->bindParam(":orders_num", $orders_num);
+                $stmt->execute();
+
+            }        
+            
+            $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num) VALUES(:cus_id, :description, :total, :orders_num)");
+            $stmt2->bindParam(":cus_id", $cus_id);
+            $stmt2->bindParam(":total", $totalPrice);
+            $stmt2->bindParam(":description", $description);
+            $stmt2->bindParam(":orders_num", $orders_num);
+            $stmt2->execute();
+            unset($_SESSION["cart_item"]);
+            break;
             case "remove";
                 if(!empty($_SESSION["cart_item"])) {
                     foreach($_SESSION["cart_item"] as $k => $v) {
@@ -134,7 +197,7 @@
                         <h6 class="collapse-header">จัดการข้อมูลสินค้า</h6>
                         <a class="collapse-item" href="employee_product.php">ข้อมูลสินค้า</a>
                         <a class="collapse-item" href="employee_stock.php">ข้อมูลสต็อกสินค้า</a>
-                        <a class="collapse-item" href="">ข้อมูลการขาย</a>
+                        <a class="collapse-item" href="employee_order.php">ข้อมูลการขาย</a>
                     </div>
                 </div>
             </li>
@@ -262,9 +325,17 @@
 
                             <div onlick="" class="js-products d-flex" style="flex-wrap: wrap;height:90%;">
                             <?php
+                                if (isset($_POST['search'])) {
 
+                                $srh = $_POST['srh'];
 
+                                $product_array = $db_handle->runQuery("SELECT * FROM products WHERE price = '$srh' OR product_num = '$srh' AND status ='พร้อมขาย' ");
+                                } else {
                                 $product_array = $db_handle->runQuery("SELECT * FROM products WHERE status ='พร้อมขาย' ");
+
+                                                        
+                                }                               
+
                                 if (!empty($product_array)) {
                                     foreach ($product_array as $key => $value) { ?>
                                         <form action="employee_create_order.php?action=add&id=<?php echo $product_array[$key]["id"];?>" method="POST">
@@ -294,23 +365,36 @@
                     </div>
                     <div style="height:600px;overflow-y: scroll;" class="col-6 bg-light p-4 pt-2">
                         <div><center><h4>ตะกร้าสินค้า <a href="employee_create_order.php?action=empty" id="btnEmpty">Empty</a></h4></center></div>
-                    
+                        
                         <?php
+                            $data_customer = $conn->prepare("SELECT * FROM customers");
+                            $data_customer->execute();
+
                             if(isset($_SESSION["cart_item"])) {
                                 $total_quantity = 0;
                                 $total_price = 0;
                             
                         ?>
-
                         
+                            <form action="">
+                                <label for="">ลูกค้า</label>
+                                <select id="" name="" form="cusform">
+                                <?php 
+                                while ($row = $data_customer->fetch(PDO::FETCH_ASSOC)) { ?>
+                                <option value="<?php echo $row['id']; ?>"><?php  echo $row['firstname']." ".$row['lastname'];?></option>
+                                <?php } ?>
+                                </select>
+                                
+                            
                             <table class="table table-striped">
+                                
                                 <tr>
                                     <th></th>
                                     <th style="text-align: center">ชื่อสินค้า</th>
                                     <th style="text-align: center">จำนวนสินค้า (ชิ้น)</th>
-                                    <th style="text-align: center">ราคา (บาท)</th>
-                                    <th style="text-align: center">ลบ</th>
-                                    <th></th>
+                                    <th style="text-align: center">ราคาต่อชิ้น (บาท)</th>
+                                    <th style="text-align: center">ราคารวม (บาท)</th>
+                                    <th style="text-align: center"></th>
                                 </tr>
                             
                                 <?php
@@ -326,6 +410,7 @@
                                     <td style="text-align: center"><?php echo $item["name"]; ?></td>
                                     <td style="text-align: center"><?php echo $item["quantity"]; ?></td>
                                     <td style="text-align: center"><?php echo number_format($item["price"],2); ?></td>
+                                    <td style="text-align: center"><?php echo number_format($item_price,2); ?></td>
                                     <td style="text-align: center"><a href="employee_create_order.php?action=remove&id=<?php echo $item["id"];?>" class="btnRemoveAction" alt="Remove Item"><i data-feather="trash"></a></td>
                                 </tr>
                                 
@@ -341,9 +426,11 @@
                                     <td style="text-align: right"><?php echo $total_quantity; ?> ชิ้น</td>
                                     <td colspan="2" style="text-align: right"><?php echo number_format($total_price,2)." ฿"; ?></td>
                                     <td>
-                                    <div>
-                                        <button>สั่ง</button>
-                                    </div>
+                                        <div>
+                                        <a class="btn btn-success" href="" data-toggle="modal" data-target="#buyModal">
+                                        ยืนยัน
+                                        </a>
+                                        </div>      
                                     </td>
                                 </tr>
                                 
@@ -351,6 +438,7 @@
 
 
                             </table>
+                            </form>
                             <?php
                                     
                                    } else {
@@ -400,7 +488,98 @@
                     </div>
                 </div>
             </div>
-        </div>  
+        </div>
+        
+        <!-- Buy Modal-->
+        <div class="modal fade" id="buyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document" style="max-width: 52%;" >
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-dark" id="exampleModalLabel">ยืนยันรายการสั่งซิ้อสินค้า</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    <div class="invoice">
+		<div class="company-address">
+			<hb class="text-dark">ร้านขายสินค้า POS</hb>
+			<br />
+			42/1 ซอย14 ถนนลงหาดบางแสน
+			<br />
+			ตำบลแสนสุข อำเภอเมืองชลบุรี
+			<br />
+            จังหวัดชลบุรี 20130
+            <br>
+            อีเมล : pointofsale@buu.ac.th
+		</div>
+	
+		<div class="invoice-details">
+			วันที่ : <?php
+            date_default_timezone_set("Asia/Bangkok");
+             echo date("Y-m-d");
+             echo "<br>";
+             echo "เวลา : ".date("h:i:s a"); ?>
+		</div>
+		
+		<div class="customer-address">
+			ชื่อลูกค้า :
+			<br>
+			เบอร์โทรศัพท์ :
+            <br>
+            ที่อยู่ : 
+            <br>
+            อีเมล :
+			
+		</div>
+		
+		<div class="clear-fix"></div>
+			<table border='1' cellspacing='0'>
+				<tr>
+					<th width=250>ชื่อสินค้า</th>
+					<th width=80>จำนวน</th>
+					<th width=100>ราคาต่อชิ้น (บาท)</th>
+					<th width=100>ราคารวม (บาท)</th>
+				</tr>
+
+			<?php	
+			
+
+           
+            $total_price = 0;                
+			foreach($_SESSION["cart_item"] as $item) {
+                    $item_price = ($item["quantity"] * $item["price"]);
+                    $name = $item['name'];
+                    $amount = $item['quantity'];
+                    $price = $item["price"];
+                    $total_price = $total_price + $item_price;
+					echo("<tr>");
+					echo("<td style='font-size: 14px'>$name</td>");
+					echo("<td class='text-center'>$amount</td>");
+					echo("<td class='text-right'>".number_format($price,2)."</td>");
+					echo("<td class='text-right'>".number_format($item_price,2)."</td>");
+					echo("</tr>");
+                    
+			}
+
+
+			echo("<tr>");
+			echo("</tr>");
+			echo("<tr>");
+			echo("<td colspan='3' class='text-right'><b>ราคารวม</b></td>");
+			echo("<td class='text-right'><b>" .number_format($total_price,2)."</b></td>");
+			echo("</tr>");
+			?>
+			</table>
+		</div>                       
+                    </div>
+                    <div class="modal-footer">
+                        <a href="employee_create_order.php?action=sale"  class="btn btn-success" id="btnSale">Buy</a>
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>        
 
  
         <!-- Bootstrap core JavaScript-->
@@ -426,5 +605,63 @@
             feather.replace()
         </script>
 </body>
+<style>
+body {		
+			font-family: Verdana;
+		}
+		
+		div.invoice {
+		border:1px solid #ccc;
+		padding:10px;
+		width:570pt;
+		}
 
+		div.company-address {
+			border:1px solid #ccc;
+			float:left;
+			width:200pt;
+		}
+		
+		div.invoice-details {
+			border:1px solid #ccc;
+			float:right;
+			width:200pt;
+		}
+		
+		div.customer-address {
+			border:1px solid #ccc;
+			float:right;
+			margin-bottom:20px;
+			margin-top:100px;
+			width:200pt;
+		}
+		
+		div.clear-fix {
+			clear:both;
+			float:none;
+		}
+		
+		table {
+			width:100%;
+		}
+		
+		th {
+			text-align: left;
+		}
+		
+		td {
+		}
+		
+		.text-left {
+			text-align:left;
+		}
+		
+		.text-center {
+			text-align:center;
+		}
+		
+		.text-right {
+			text-align:right;
+		}   
+</style>
 </html>
