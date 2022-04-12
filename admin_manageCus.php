@@ -321,11 +321,11 @@ if (isset($_REQUEST['delete_id'])) {
 
                                                     $srh = $_POST['srh'];
                                                     $check_data = $conn->prepare("SELECT * FROM customers WHERE firstname = '$srh' OR lastname = '$srh' OR address = '$srh'
-                                                    OR phone = '$srh' OR email = '$srh' OR birthday = '$srh' OR id = '$srh'");
+                                                    OR phone = '$srh' OR email = '$srh' OR birthday = '$srh' OR id = '$srh' ORDER BY firstname asc");
                                                     $check_data->execute();
 
                                                 } else {                                   
-                                                    $check_data = $conn->prepare("SELECT * FROM customers");
+                                                    $check_data = $conn->prepare("SELECT * FROM customers ORDER BY firstname asc");
                                                     $check_data->execute();
                                                 }
 

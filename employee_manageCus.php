@@ -325,7 +325,6 @@
                                         <table class="table">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col" style="text-align: center">ID</th>
                                                     <th scope="col" style="text-align: center">ชื่อ</th>
                                                     <th scope="col" style="text-align: center">นามสกุล</th>
                                                     <th scope="col" style="text-align: center">ที่อยู่</th>
@@ -340,10 +339,10 @@
                                                 if (isset($_POST['search'])) {
                                                     $srh = $_POST['srh'];
                                                     $check_data = $conn->prepare("SELECT * FROM customers WHERE firstname = '$srh' OR lastname = '$srh' OR address = '$srh'
-                                                    OR phone = '$srh' OR email = '$srh' OR birthday = '$srh' OR id = '$srh'");
+                                                    OR phone = '$srh' OR email = '$srh' OR birthday = '$srh' OR id = '$srh' ORDER BY firstname asc");
                                                     $check_data->execute();
                                                 } else {
-                                                    $check_data = $conn->prepare("SELECT * FROM customers");
+                                                    $check_data = $conn->prepare("SELECT * FROM customers ORDER BY firstname asc");
                                                     $check_data->execute();
                                             }
 
@@ -351,7 +350,6 @@
                                                 while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
                                                 ?>
                                                     <tr>
-                                                        <th scope="row"><?php echo $row['id']; ?></th>
                                                         <td scope="col" style="text-align: center"><?php echo $row['firstname']; ?></td>
                                                         <td scope="col" style="text-align: center"><?php echo $row['lastname']; ?></td>
                                                         <td scope="col" style="text-align: center"><?php echo $row['address']; ?></td>

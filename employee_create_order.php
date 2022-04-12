@@ -15,30 +15,22 @@
     $userdata->execute();
     $rowuserdata = $userdata->fetch(PDO::FETCH_ASSOC);
 
+    $cus_id = 0;
+    if(isset($_GET['cus_id'])) {
+        $cus_id = $_GET["cus_id"];
+    }
+    
     if ($rowuserdata['urole'] != 'Employee') {
         unset($_SESSION['user_login']);
         unset($_SESSION['admin_login']);
         header('location: index.php');
     }
 
-    if(isset($_GET['cus_id'])) {
-        $cus_id = $_GET["cus_id"];
-        $cusdata = $conn->prepare("SELECT * FROM customers WHERE id = $cus_id");
-        $cusdata->execute();
-        $rowcusdata = $userdata->fetch(PDO::FETCH_ASSOC);    
-    }
+
 
 
     if(!empty($_GET["action"])) {
         switch($_GET["action"]) {
-            case "cus";
-            
-                $cus_id = $_GET["id"];
-                $cusdata = $conn->prepare("SELECT * FROM customers WHERE id = $cus_id");
-                $cusdata->execute();
-                $rowcusdata = $userdata->fetch(PDO::FETCH_ASSOC);
-            
-            break;
             case "add";
                 if(!empty($_POST["quantity"])) {
                     $productById = $db_handle->runQuery("SELECT * FROM products WHERE id ='" . $_GET["id"]. "'");
@@ -71,11 +63,12 @@
             $count = 0;
             $orders_num = rand(0,9999)."2222".rand(0,99999);
             $emp_id = $rowuserdata['id'];
-            $cus_id = 1;
+            $cus_id = $_GET['id'];
+
             $totalPrice = 0;
             $description = "";
-            $id1item = $_SESSION["cart_item"];
 
+            
             foreach ($ctitem as $ct) {
                 $count+= count($ct);
             }
@@ -124,8 +117,7 @@
                 $stmt2->bindParam(":description", $description);
                 $stmt2->bindParam(":orders_num", $orders_num);
                 $stmt2->execute();
-                unset($_SESSION["cart_item"]);
-                $cus_id = 0;      
+                unset($_SESSION["cart_item"]);      
 
             } elseif ($count > 1 && $count != 0) {
                 for($i = 0; $i < $count; $i++){
@@ -177,8 +169,7 @@
                 $stmt2->bindParam(":description", $description);
                 $stmt2->bindParam(":orders_num", $orders_num);
                 $stmt2->execute();
-                unset($_SESSION["cart_item"]);
-                $cus_id = 0;                
+                unset($_SESSION["cart_item"]);                
             }
 
             break;
@@ -435,14 +426,15 @@
                         <form action="" method="GET">
                                 <label for="">ลูกค้า</label>
                                 <select name="cus_id">
+                                <option value="">--เลือกลูกค้า--</option>
                                 <?php 
-                                $data_customer = $conn->prepare("SELECT * FROM customers");
+                                $data_customer = $conn->prepare("SELECT * FROM customers ORDER BY firstname asc");
                                 $data_customer->execute();
                                 while ($rowcus = $data_customer->fetch(PDO::FETCH_ASSOC)) { ?>
                                 <option value="<?php echo $rowcus['id']; ?>"><?php  echo $rowcus['firstname']." ".$rowcus['lastname'];?></option>
                                 <?php  } ?>                
                                 </select>           
-                                <button class="btn-xs btn-primary" type="submit">+</button>
+                                <button class="btn-xs btn-info" type="submit">+</button>
                                 
                             </form>   
                         </div>
@@ -561,6 +553,7 @@
         
         <!-- Buy Modal-->
         <div class="modal fade" id="buyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
             <div class="modal-dialog" role="document" style="max-width: 52%;" >
                 <div class="modal-content">
                     <div class="modal-header">
@@ -570,91 +563,95 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                    <div class="invoice">
-		<div class="company-address">
-			<hb class="text-dark">ร้านขายสินค้า POS</hb>
-			<br />
-			42/1 ซอย14 ถนนลงหาดบางแสน
-			<br />
-			ตำบลแสนสุข อำเภอเมืองชลบุรี
-			<br />
-            จังหวัดชลบุรี 20130
-            <br>
-            อีเมล : pointofsale@buu.ac.th
-		</div>
+                        <div class="invoice">
+                            <div class="company-address">
+                                <hb class="text-dark">ร้านขายสินค้า POS</hb>
+                                <br />
+                                42/1 ซอย14 ถนนลงหาดบางแสน
+                                <br />
+                                ตำบลแสนสุข อำเภอเมืองชลบุรี
+                                <br />
+                                จังหวัดชลบุรี 20130
+                                <br>
+                                อีเมล : pointofsale@buu.ac.th
+                            </div>
 
-		<div class="invoice-details">
-			วันที่ : <?php
-            date_default_timezone_set("Asia/Bangkok");
-             echo date("Y-m-d");
-             echo "<br>";
-             echo "เวลา : ".date("h:i:s a"); ?>
-             <br>
-             พนักงานขาย : <?php echo $rowuserdata['firstname']." ".$rowuserdata['lastname'];?>
-		</div>
+                            <div class="invoice-details">
+                                วันที่ : <?php
+                                date_default_timezone_set("Asia/Bangkok");
+                                echo date("Y-m-d");
+                                echo "<br>";
+                                echo "เวลา : ".date("h:i:s a"); ?>
+                                <br>
+                                พนักงานขาย : <?php echo $rowuserdata['firstname']." ".$rowuserdata['lastname'];?>
+                            </div>
 
-		
-		<div class="customer-address">
-			ชื่อลูกค้า : <?php     
+                        
+                            <div class="customer-address">
+                                ชื่อลูกค้า : <?php 
+                                $cusid_data = $conn->prepare('SELECT * FROM customers WHERE id = :cusid');
+                                $cusid_data->bindParam(':cusid', $cus_id);
+                                $cusid_data->execute();
+                                $cusdata = $cusid_data->fetch(PDO::FETCH_ASSOC);
+                                echo $cusdata['firstname']." ".$cusdata['lastname'];
+                                echo "<br>";
+                                echo "เบอร์โทรศัพท์ : ".$cusdata['phone'];
+                                echo "<br>";
+                                echo "ที่อยู่ : ".$cusdata['address']; 
+                                echo "<br>";
+                                echo "อีเมล : ".$cusdata['email'];
+                                ?>
+                                
+                            </div>
+                        
+                            <div class="clear-fix"></div>
+                                <table border='1' cellspacing='0'>
+                                    <tr>
+                                        <th width=250>ชื่อสินค้า</th>
+                                        <th width=80>จำนวน</th>
+                                        <th width=100>ราคาต่อชิ้น (บาท)</th>
+                                        <th width=100>ราคารวม (บาท)</th>
+                                    </tr>
 
-            ?>
-			<br> 
-			เบอร์โทรศัพท์ :
-            <br>
-            ที่อยู่ : 
-            <br>
-            อีเมล :
-			
-		</div>
-		
-		<div class="clear-fix"></div>
-			<table border='1' cellspacing='0'>
-				<tr>
-					<th width=250>ชื่อสินค้า</th>
-					<th width=80>จำนวน</th>
-					<th width=100>ราคาต่อชิ้น (บาท)</th>
-					<th width=100>ราคารวม (บาท)</th>
-				</tr>
+                                <?php	
+                                
 
-			<?php	
-			
-
-           
-            $total_price = 0;                
-			foreach($_SESSION["cart_item"] as $item) {
-                    $item_price = ($item["quantity"] * $item["price"]);
-                    $name = $item['name'];
-                    $amount = $item['quantity'];
-                    $price = $item["price"];
-                    $total_price = $total_price + $item_price;
-					echo("<tr>");
-					echo("<td style='font-size: 14px'>$name</td>");
-					echo("<td class='text-center'>$amount</td>");
-					echo("<td class='text-right'>".number_format($price,2)."</td>");
-					echo("<td class='text-right'>".number_format($item_price,2)."</td>");
-					echo("</tr>");
-                    
-			}
+                            
+                                $total_price = 0;                
+                                foreach($_SESSION["cart_item"] as $item) {
+                                        $item_price = ($item["quantity"] * $item["price"]);
+                                        $name = $item['name'];
+                                        $amount = $item['quantity'];
+                                        $price = $item["price"];
+                                        $total_price = $total_price + $item_price;
+                                        echo("<tr>");
+                                        echo("<td style='font-size: 14px'>$name</td>");
+                                        echo("<td class='text-center'>$amount</td>");
+                                        echo("<td class='text-right'>".number_format($price,2)."</td>");
+                                        echo("<td class='text-right'>".number_format($item_price,2)."</td>");
+                                        echo("</tr>");
+                                        
+                                }
 
 
-			echo("<tr>");
-			echo("</tr>");
-			echo("<tr>");
-			echo("<td colspan='3' class='text-right'><b>ราคารวม</b></td>");
-			echo("<td class='text-right'><b>" .number_format($total_price,2)."</b></td>");
-			echo("</tr>");
-			?>
-			</table>
-		</div>                       
-                    </div>
-                    <div class="modal-footer">
-                        <a href="employee_create_order.php?action=sale"  class="btn btn-success" id="btnSale">Buy</a>
-                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                echo("<tr>");
+                                echo("</tr>");
+                                echo("<tr>");
+                                echo("<td colspan='3' class='text-right'><b>ราคารวม</b></td>");
+                                echo("<td class='text-right'><b>" .number_format($total_price,2)."</b></td>");
+                                echo("</tr>");
+                                ?>
+                                </table>
+                            </div>                       
+                        </div>
+                        <div class="modal-footer">
+                            <a href="employee_create_order.php?action=sale&id=<?php echo $cus_id; ?>"  class="btn btn-success" id="btnSale">Buy</a>
+                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>        
-
+            </div>        
+        </div>
  
         <!-- Bootstrap core JavaScript-->
         <script src="vendor/jquery/jquery.min.js"></script>
