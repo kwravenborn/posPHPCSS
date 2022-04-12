@@ -589,17 +589,22 @@
                         
                             <div class="customer-address">
                                 ชื่อลูกค้า : <?php 
-                                $cusid_data = $conn->prepare('SELECT * FROM customers WHERE id = :cusid');
-                                $cusid_data->bindParam(':cusid', $cus_id);
-                                $cusid_data->execute();
-                                $cusdata = $cusid_data->fetch(PDO::FETCH_ASSOC);
-                                echo $cusdata['firstname']." ".$cusdata['lastname'];
-                                echo "<br>";
-                                echo "เบอร์โทรศัพท์ : ".$cusdata['phone'];
-                                echo "<br>";
-                                echo "ที่อยู่ : ".$cusdata['address']; 
-                                echo "<br>";
-                                echo "อีเมล : ".$cusdata['email'];
+                                if ($cus_id == 0){
+                                    echo ("<h2>กรุณาเลือกลูกค้า</h2>");
+                                } else {
+                                    $cusid_data = $conn->prepare('SELECT * FROM customers WHERE id = :cusid');
+                                    $cusid_data->bindParam(':cusid', $cus_id);
+                                    $cusid_data->execute();
+                                    $cusdata = $cusid_data->fetch(PDO::FETCH_ASSOC);
+                                    echo $cusdata['firstname']." ".$cusdata['lastname'];
+                                    echo "<br>";
+                                    echo "เบอร์โทรศัพท์ : ".$cusdata['phone'];
+                                    echo "<br>";
+                                    echo "ที่อยู่ : ".$cusdata['address']; 
+                                    echo "<br>";
+                                    echo "อีเมล : ".$cusdata['email'];
+                                }
+
                                 ?>
                                 
                             </div>
@@ -645,7 +650,7 @@
                             </div>                       
                         </div>
                         <div class="modal-footer">
-                            <a href="employee_create_order.php?action=sale&id=<?php echo $cus_id; ?>"  class="btn btn-success" id="btnSale">Buy</a>
+                            <a href='employee_create_order.php?action=sale&id=<?php echo $cus_id; ?>'  class='btn btn-success' id='btnSale'>Buy</a>
                             <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
                         </div>
                     </div>

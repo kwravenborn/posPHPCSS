@@ -4,5 +4,6 @@
     unset($_SESSION['user_login']);
     unset($_SESSION['admin_login']);
     header('location: index.php');
+    unset($_SESSION["cart_item"]);
 
 ?>

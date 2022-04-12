@@ -361,7 +361,7 @@ if ($rowuserdata['urole'] != 'Admin') {
                                                     } else {
                                                         date_default_timezone_set("Asia/Bangkok");
                                                         $datetd = date("Y-m-d");
-                                                        $check_data = $conn->prepare("SELECT * FROM orders WHERE date(date) = '$datetd' ");
+                                                        $check_data = $conn->prepare("SELECT * FROM orders WHERE date(date) = '$datetd' ORDER BY date DESC");
                                                         $check_data->execute();
 
                                                         
