@@ -125,17 +125,7 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Addons
-            </div>
 
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
-                <a class="nav-link" href="charts.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -205,7 +195,7 @@
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="employee_profile.php">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
@@ -378,15 +368,29 @@
 		</div>
 	
 		<div class="invoice-details">
+            เลขที่ใบเสร็จ : <?php echo $row['orders_num'];?>
+            <br>
 			วันที่ : <?php
             $order_detail = $conn->prepare('SELECT date FROM order_detail WHERE orders_num = :ordes_num');
             $order_detail->bindParam(':ordes_num', $row['orders_num']);
             $order_detail->execute();
             $roworder = $order_detail->fetch(PDO::FETCH_ASSOC);
+
+            $empid = $conn->prepare('SELECT emp_id FROM order_detail WHERE orders_num = :orders_num');
+            $empid->bindParam(':orders_num', $row['orders_num']);
+            $empid->execute();
+            $empid = $empid->fetch(PDO::FETCH_ASSOC);
+            $emp_data = $conn->prepare('SELECT * FROM users WHERE id = :empid');
+            $emp_data->bindParam(':empid', $empid['emp_id']);
+            $emp_data->execute();
+            $empdata = $emp_data->fetch(PDO::FETCH_ASSOC);
+
             date_default_timezone_set("Asia/Bangkok");
              echo date("Y-m-d", strtotime($roworder['date']));
              echo "<br>";
              echo "เวลา : ".date("h:i:s a", strtotime($roworder['date'])); ?>
+             <br>
+             พนักงานขาย : <?php echo $empdata['firstname']." ".$empdata['lastname'];?>
 		</div>
 		
 		<div class="customer-address">

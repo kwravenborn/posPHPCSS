@@ -20,9 +20,25 @@
         unset($_SESSION['admin_login']);
         header('location: index.php');
     }
-    
+
+    if(isset($_GET['cus_id'])) {
+        $cus_id = $_GET["cus_id"];
+        $cusdata = $conn->prepare("SELECT * FROM customers WHERE id = $cus_id");
+        $cusdata->execute();
+        $rowcusdata = $userdata->fetch(PDO::FETCH_ASSOC);    
+    }
+
+
     if(!empty($_GET["action"])) {
         switch($_GET["action"]) {
+            case "cus";
+            
+                $cus_id = $_GET["id"];
+                $cusdata = $conn->prepare("SELECT * FROM customers WHERE id = $cus_id");
+                $cusdata->execute();
+                $rowcusdata = $userdata->fetch(PDO::FETCH_ASSOC);
+            
+            break;
             case "add";
                 if(!empty($_POST["quantity"])) {
                     $productById = $db_handle->runQuery("SELECT * FROM products WHERE id ='" . $_GET["id"]. "'");
@@ -54,30 +70,29 @@
             $ctitem = array($_SESSION["cart_item"]);
             $count = 0;
             $orders_num = rand(0,9999)."2222".rand(0,99999);
+            $emp_id = $rowuserdata['id'];
             $cus_id = 1;
             $totalPrice = 0;
             $description = "";
+            $id1item = $_SESSION["cart_item"];
 
             foreach ($ctitem as $ct) {
                 $count+= count($ct);
             }
             
-            for($i = 0; $i < $count; $i++){
+            if ($count == 1){
 
-                $item = ($ctitem[0][$i]);
+                $ctitem = array_values($_SESSION["cart_item"]);
+                $item = ($ctitem[0]);
                 $name = $item['name'];
                 $qty = $item['quantity'];
                 $price = $item['price'];
                 $image = $item['image'];
                 $ttprice = $qty * $price;
                 $totalPrice = $totalPrice + $ttprice;
+                $description = $item['name']." (".$item['quantity'].")";
 
-                if($i == 0){
-                    $description = $item['name']." (".$item['quantity'].")";
-                } else {
-                    $description = $description.", ".$item['name']." (".$item['quantity'].")";
-                }
-                
+
                 $data_product = $conn->prepare("SELECT * FROM products WHERE name = '$name'");
                 $data_product->execute();
                 $datapd = $data_product->fetch(PDO::FETCH_ASSOC);
@@ -98,20 +113,74 @@
                 $stmt->bindParam(":qty", $qty);
                 $stmt->bindParam(":price", $ttprice);
                 $stmt->bindParam(":cus_id", $cus_id);
-                $stmt->bindParam(":emp_id", $cus_id);
+                $stmt->bindParam(":emp_id", $emp_id);
                 $stmt->bindParam(":image", $image);
                 $stmt->bindParam(":orders_num", $orders_num);
                 $stmt->execute();
 
-            }        
-            
-            $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num) VALUES(:cus_id, :description, :total, :orders_num)");
-            $stmt2->bindParam(":cus_id", $cus_id);
-            $stmt2->bindParam(":total", $totalPrice);
-            $stmt2->bindParam(":description", $description);
-            $stmt2->bindParam(":orders_num", $orders_num);
-            $stmt2->execute();
-            unset($_SESSION["cart_item"]);
+                $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num) VALUES(:cus_id, :description, :total, :orders_num)");
+                $stmt2->bindParam(":cus_id", $cus_id);
+                $stmt2->bindParam(":total", $totalPrice);
+                $stmt2->bindParam(":description", $description);
+                $stmt2->bindParam(":orders_num", $orders_num);
+                $stmt2->execute();
+                unset($_SESSION["cart_item"]);
+                $cus_id = 0;      
+
+            } elseif ($count > 1 && $count != 0) {
+                for($i = 0; $i < $count; $i++){
+
+                    $item = ($ctitem[0][$i]);
+                    $name = $item['name'];
+                    $qty = $item['quantity'];
+                    $price = $item['price'];
+                    $image = $item['image'];
+                    $ttprice = $qty * $price;
+                    $totalPrice = $totalPrice + $ttprice;
+    
+                    if($i == 0){
+                        $description = $item['name']." (".$item['quantity'].")";
+                    } else {
+                        $description = $description.", ".$item['name']." (".$item['quantity'].")";
+                    }
+                    
+                    $data_product = $conn->prepare("SELECT * FROM products WHERE name = '$name'");
+                    $data_product->execute();
+                    $datapd = $data_product->fetch(PDO::FETCH_ASSOC);
+                    $datapd['amount'] = $datapd['amount'] - $qty;
+                    if($datapd['amount'] == 0){
+                        $datapd['status'] = "ไม่พร้อมขาย";
+                    }
+    
+                    $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE name = :name");
+                    $up_stmt->bindParam(":amount", $datapd['amount']);
+                    $up_stmt->bindParam(":status", $datapd['status']);
+                    $up_stmt->bindParam(":name", $name);
+                    $up_stmt->execute();
+    
+                    $stmt = $conn->prepare("INSERT INTO order_detail(name, qty, price, cus_id, emp_id, image, orders_num) 
+                    VALUES(:name, :qty, :price, :cus_id, :emp_id, :image, :orders_num)");
+                    $stmt->bindParam(":name", $name);
+                    $stmt->bindParam(":qty", $qty);
+                    $stmt->bindParam(":price", $ttprice);
+                    $stmt->bindParam(":cus_id", $cus_id);
+                    $stmt->bindParam(":emp_id", $emp_id);
+                    $stmt->bindParam(":image", $image);
+                    $stmt->bindParam(":orders_num", $orders_num);
+                    $stmt->execute();
+    
+                }    
+                       
+                $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num) VALUES(:cus_id, :description, :total, :orders_num)");
+                $stmt2->bindParam(":cus_id", $cus_id);
+                $stmt2->bindParam(":total", $totalPrice);
+                $stmt2->bindParam(":description", $description);
+                $stmt2->bindParam(":orders_num", $orders_num);
+                $stmt2->execute();
+                unset($_SESSION["cart_item"]);
+                $cus_id = 0;                
+            }
+
             break;
             case "remove";
                 if(!empty($_SESSION["cart_item"])) {
@@ -218,17 +287,7 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Addons
-            </div>
 
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
-                <a class="nav-link" href="charts.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -296,7 +355,7 @@
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="employee_profile.php">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
@@ -322,7 +381,7 @@
                             <form action="" method="POST">
                                 <div class="input-group mb-3">
                                     <input type="text" name="srh" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1" autofocus>
-                                    <input type="submit" name="search" class="btn btn-info">
+                                    <input type="submit" name="search" class="btn btn-info" value="Search">
                                     <a href="" class="btn btn-secondary">View All</a>
                                 </div>
                             </form>
@@ -369,8 +428,24 @@
                         </div>
                     </div>
                     <div style="height:600px;overflow-y: scroll;" class="col-6 bg-light p-4 pt-2">
-                        <div><center><h4>ตะกร้าสินค้า <a href="employee_create_order.php?action=empty" id="btnEmpty">Empty</a></h4></center></div>
-                        
+                        <div><center><h4>ตะกร้าสินค้า <a href="employee_create_order.php?action=empty" id="btnEmpty">Empty</a></h4>
+                    </center>
+                        </div>
+                        <div>
+                        <form action="" method="GET">
+                                <label for="">ลูกค้า</label>
+                                <select name="cus_id">
+                                <?php 
+                                $data_customer = $conn->prepare("SELECT * FROM customers");
+                                $data_customer->execute();
+                                while ($rowcus = $data_customer->fetch(PDO::FETCH_ASSOC)) { ?>
+                                <option value="<?php echo $rowcus['id']; ?>"><?php  echo $rowcus['firstname']." ".$rowcus['lastname'];?></option>
+                                <?php  } ?>                
+                                </select>           
+                                <button class="btn-xs btn-primary" type="submit">+</button>
+                                
+                            </form>   
+                        </div>
                         <?php
                             $data_customer = $conn->prepare("SELECT * FROM customers");
                             $data_customer->execute();
@@ -380,17 +455,6 @@
                                 $total_price = 0;
                             
                         ?>
-                        
-                            <form action="">
-                                <label for="">ลูกค้า</label>
-                                <select id="" name="" form="cusform">
-                                <?php 
-                                while ($row = $data_customer->fetch(PDO::FETCH_ASSOC)) { ?>
-                                <option value="<?php echo $row['id']; ?>"><?php  echo $row['firstname']." ".$row['lastname'];?></option>
-                                <?php } ?>
-                                </select>
-                                
-                            
                             <table class="table table-striped">
                                 
                                 <tr>
@@ -443,7 +507,7 @@
 
 
                             </table>
-                            </form>
+                            
                             <?php
                                     
                                    } else {
@@ -518,18 +582,23 @@
             <br>
             อีเมล : pointofsale@buu.ac.th
 		</div>
-	
+
 		<div class="invoice-details">
 			วันที่ : <?php
             date_default_timezone_set("Asia/Bangkok");
              echo date("Y-m-d");
              echo "<br>";
              echo "เวลา : ".date("h:i:s a"); ?>
+             <br>
+             พนักงานขาย : <?php echo $rowuserdata['firstname']." ".$rowuserdata['lastname'];?>
 		</div>
+
 		
 		<div class="customer-address">
-			ชื่อลูกค้า :
-			<br>
+			ชื่อลูกค้า : <?php     
+
+            ?>
+			<br> 
 			เบอร์โทรศัพท์ :
             <br>
             ที่อยู่ : 
@@ -626,7 +695,7 @@ body {
 			float:left;
 			width:200pt;
 		}
-		
+
 		div.invoice-details {
 			border:1px solid #ccc;
 			float:right;

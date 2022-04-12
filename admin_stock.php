@@ -223,7 +223,6 @@ if ($rowuserdata['urole'] != 'Admin') {
                                                     <th scope="col" style="text-align: center">ชื่อสินค้า</th>
                                                     <th scope="col" style="text-align: center">จำนวนที่ stock สินค้า</th>
                                                     <th></th>
-                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -249,7 +248,7 @@ if ($rowuserdata['urole'] != 'Admin') {
                                                             <td style="text-align: center"><?php echo $row['date']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['amount']; ?> ชิ้น</td>
-                                                            <td><a href="admin_edit_stock.php?update_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">Edit</a></td>
+                                                            
                                                             <td><a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
                                                         </tr>
                                                     </form>

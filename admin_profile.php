@@ -19,30 +19,55 @@ if ($rowuserdata['urole'] != 'Admin') {
     header('location: index.php');
 }
 
-if (isset($_REQUEST['update_id'])) {
-    try {
-        $id = $_REQUEST['update_id'];
-        $select_stmt = $conn->prepare('SELECT * FROM stockpd WHERE id = :id');
-        $select_stmt->bindParam(':id', $id);
-        $select_stmt->execute();
-        $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        $e->getMessage();
-    }
-}
-
 if (isset($_REQUEST['btn_update'])) {
-    try {
-        $name = $_REQUEST['name'];
-        $amount = $_REQUEST['amount'];
 
-        $update_stmt = $conn->prepare("UPDATE stockpd SET name = :name, amount = :amount WHERE id = :id");
-        $update_stmt->bindParam(':name', $name);
-        $update_stmt->bindParam(':amount', $amount);
-        $update_stmt->bindParam(':id', $id);
+    try {
+        $username = $_REQUEST['username'];
+        $firstname = $_REQUEST['firstname'];
+        $lastname = $_REQUEST['lastname'];
+        $address = $_REQUEST['address'];
+        $phone = $_REQUEST['phone'];
+        $email = $_REQUEST['email'];
+        $birthday = $_REQUEST['birthday'];
+        $image_file = $_FILES['file']['name'];
+        $type = $_FILES['file']['type'];
+        $size = $_FILES['file']['size'];
+        $temp = $_FILES['file']['tmp_name'];
+
+        $path = "upload/" . $image_file;  //set upload folder path
+        $direc = "upload/";
+
+        if ($image_file) {
+            if ($type == "image/jpg" || $type == "image/jpeg" || $type == "image/png" || $type == "image/gif") {
+                if (!file_exists($path)) {  // check file not exist in your upload folder path
+                    if ($size < 5000000) {  // check file size
+                        unlink($direc.$row['image']);
+                        move_uploaded_file($temp, 'upload/'.$image_file); //move upload file temperary to upload folder
+                    } else {
+                        $errorMsg = "Your file too large.";
+                    }
+                } else {
+                    $errorMsg = "File already exists.";
+                }
+            } else {
+                $errorMsg = "Upload JPG, JPEG, PNG and GIF file formate.";
+            }
+        } else {
+            $image_file = $rowuserdata['image'];
+        }
+
+        $update_stmt = $conn->prepare("UPDATE users SET firstname = :firstname, lastname = :lastname, address = :address, phone = :phone, email = :email, birthday = :birthday, image = :fimage WHERE username = :username");
+        $update_stmt->bindParam(':firstname', $firstname);
+        $update_stmt->bindParam(':lastname', $lastname);
+        $update_stmt->bindParam(':address', $address);
+        $update_stmt->bindParam(':phone', $phone);
+        $update_stmt->bindParam(':email', $email);
+        $update_stmt->bindParam(':birthday', $birthday);
+        $update_stmt->bindParam(':fimage', $image_file);        
+        $update_stmt->bindParam(':username', $username);
         $update_stmt->execute();
 
-        header("location: admin_stock.php");
+        header("location: admin.php");
     } catch (PDOException $e) {
         $e->getMessage();
     }
@@ -101,7 +126,7 @@ if (isset($_REQUEST['btn_update'])) {
 
             <!-- Heading -->
             <div class="sidebar-heading">
-            ข้อมูล
+                ข้อมูล
             </div>
 
             <!-- Nav Item - Employess and Customer -->
@@ -136,8 +161,7 @@ if (isset($_REQUEST['btn_update'])) {
             </li>
 
             <!-- Divider -->
-            <hr class="sidebar-divider">
-
+            <hr class="sidebar-divider">            
 
 
             <!-- Divider -->
@@ -165,6 +189,7 @@ if (isset($_REQUEST['btn_update'])) {
                         <i class="fa fa-bars"></i>
                     </button>
 
+                    <!-- Topbar Search -->
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -189,12 +214,12 @@ if (isset($_REQUEST['btn_update'])) {
                             </div>
                         </li>
 
-
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
+
                         <li class="nav-item dropdown no-arrow">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>                                
                                     <tr>
                                         <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $rowuserdata['firstname']; ?> <?php echo $rowuserdata['lastname']; ?></span>
@@ -204,7 +229,7 @@ if (isset($_REQUEST['btn_update'])) {
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="admin_profile.php">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
@@ -215,93 +240,127 @@ if (isset($_REQUEST['btn_update'])) {
                                 </a>
                             </div>
                         </li>
+
+                    </ul>
+
                 </nav>
                 <!-- End of Topbar -->
 
+                <!-- Begin Page Content -->
+
                 <div class="container">
                     <br>
-                    <form action="" method="POST">
-                        <?php
-                        $id = $_REQUEST['update_id']; {
-                            $select_stmt = $conn->prepare('SELECT * FROM stockpd WHERE id = :id');
-                            $select_stmt->bindParam(':id', $id);
-                            $select_stmt->execute();
-                            $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+                    <tbody>
+                        <form action="" method="POST" class="form-horizontal" enctype="multipart/form-data">                        
+                                <h2 style="text-align:center">แก้ไขข้อมูลพนักงาน</h2>
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input readonly type="text" class="form-control" name="username" aria-describebdy="username" value="<?php echo $rowuserdata['username']; ?>" placeholder="<?php echo $rowuserdata['username']; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="firstname" class="form-label">ชื่อ</label>
+                                    <input type="text" class="form-control" name="firstname" aria-describebdy="firstname" value="<?php echo $rowuserdata['firstname']; ?>" placeholder="<?php echo $rowuserdata['firstname']; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="lastname" class="form-label">นามสกุล</label>
+                                    <input type="text" class="form-control" name="lastname" aria-describebdy="lastname" value="<?php echo $rowuserdata['lastname']; ?>" placeholder="<?php echo $rowuserdata['lastname']; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">ที่อยู่</label>
+                                    <input type="text" class="form-control" name="address" aria-describebdy="address" value="<?php echo $rowuserdata['address']; ?>" placeholder="<?php echo $rowuserdata['address']; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">เบอร์โทรศัพท์</label>
+                                    <input type="text" class="form-control" name="phone" aria-describebdy="phone" value="<?php echo $rowuserdata['phone']; ?>" placeholder="<?php echo $rowuserdata['phone']; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">อีเมล</label>
+                                    <input type="text" class="form-control" name="email" aria-describebdy="email" value="<?php echo $rowuserdata['email']; ?>" placeholder="<?php echo $rowuserdata['email']; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="birthday" class="form-label">วันเกิด</label>
+                                    <input type="date" class="form-control" name="birthday" aria-describebdy="birthday" value="<?php echo $rowuserdata['birthday']; ?>">
+                                </div>
+                                <div>
+                                    <label for="file" class="form-label">รูปภาพ</label>
+                                    <div>
+                                        <input type="file" name="file" class="form-control" value="<?php echo $rowuserdata['image']; ?>">
+                                        <br>
+                                        <p><img src="upload/<?php echo $rowuserdata['image']; ?>" height="100px" width="100px" alt=""></p>
+                                    </div>
+                                </div>
+                                <br>                               
+                                <div>
+                                    <input type="submit" name="btn_update" class="btn btn-success" value="แก้ไขข้อมูล">
+                                    <a href="admin.php" class="btn btn-danger">ยกเลิก</a>
+                                </div>
 
-                        ?>
-                            <h2 style="text-align:center">แก้ไขข้อมูล Stock สินค้า</h2>
-                            <div class="mb-3">
-                                <label for="name" class="form-label">ชื่อสินค้า</label>
-                                <input type="text" class="form-control" name="name" aria-describebdy="name" value="<?php echo $row['name']; ?>" placeholder="<?php echo $row['name']; ?>" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="amount" class="form-label">จำนวน</label>
-                                <input type="text" class="form-control" name="amount" aria-describebdy="amount" value="<?php echo $row['amount']; ?>" placeholder="<?php echo $row['amount']; ?>">
-                            </div>
-                            <div>
-                                <input type="submit" name="btn_update" class="btn btn-success" value="แก้ไขข้อมูล">
-                                <a href="admin_stock.php" class="btn btn-danger">ยกเลิก</a>
-                            </div>
-                        <?php } ?>
-                    </form>
-                </div>
-                <!-- Footer -->
-                <footer class="sticky-footer bg-white">
-                    <div class="container my-auto">
-                        <div class="copyright text-center my-auto">
-                            <span>Copyright &copy; Your Website 2021</span>
-                        </div>
-                    </div>
-                </footer>
-                <!-- End of Footer -->
+                        </form>
+                    </tbody>
+                </div>          
+
+                <!-- /.container-fluid -->
 
             </div>
-            <!-- End of Content Wrapper -->
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Your Website 2021</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
 
         </div>
-        <!-- End of Page Wrapper -->
+        <!-- End of Content Wrapper -->
 
-        <!-- Logout Modal-->
-        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                        <a class="btn btn-primary" href="index.php">Logout</a>
-                    </div>
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-primary" href="index.php">Logout</a>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Bootstrap core JavaScript-->
-        <script src="vendor/jquery/jquery.min.js"></script>
-        <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap core JavaScript-->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-        <!-- Core plugin JavaScript-->
-        <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <!-- Core plugin JavaScript-->
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
 
-        <!-- Custom scripts for all pages-->
-        <script src="js/sb-admin-2.min.js"></script>
+    <!-- Custom scripts for all pages-->
+    <script src="js/sb-admin-2.min.js"></script>
 
-        <!-- Page level plugins -->
-        <script src="vendor/chart.js/Chart.min.js"></script>
+    <!-- Page level plugins -->
+    <script src="vendor/chart.js/Chart.min.js"></script>
 
-        <!-- Page level custom scripts -->
-        <script src="js/demo/chart-area-demo.js"></script>
-        <script src="js/demo/chart-pie-demo.js"></script>
+    <!-- Page level custom scripts -->
+    <script src="js/demo/chart-area-demo.js"></script>
+    <script src="js/demo/chart-pie-demo.js"></script>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-        <script>
-            feather.replace()
-        </script>
 </body>
 
 </html>

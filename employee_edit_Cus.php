@@ -19,23 +19,44 @@
         header('location: index.php');
     }
     
-    if (isset($_REQUEST['delete_id'])) {
-        $id = $_REQUEST['delete_id'];
-
-        $select_stmt = $conn->prepare('SELECT * FROM stockpd WHERE id = :id');
-        $select_stmt->bindParam(':id', $id);
-        $select_stmt->execute();
-        $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
-        unlink("upload/".$row['image']);
-        
-        $delete_stmt = $conn->prepare('DELETE FROM stockpd WHERE id = :id');
-        $delete_stmt->bindParam(':id', $id);
-        $delete_stmt->execute();
-
-        header("location: employee_stockpd.php");
+    if (isset($_REQUEST['update_id'])) {
+        try {
+            $id = $_REQUEST['update_id'];
+            $select_stmt = $conn->prepare('SELECT * FROM customers WHERE id = :id');
+            $select_stmt->bindParam(':id', $id);
+            $select_stmt->execute();
+            $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            $e->getMessage();
+        }
     }
     
-
+    if (isset($_REQUEST['btn_update'])) {
+        try {
+            $firstname = $_REQUEST['firstname'];
+            $lastname = $_REQUEST['lastname'];
+            $address = $_REQUEST['address'];
+            $phone = $_REQUEST['phone'];
+            $email = $_REQUEST['email'];
+            $birthday = $_REQUEST['birthday'];
+    
+            $update_stmt = $conn->prepare("UPDATE customers SET firstname = :firstname, lastname = :lastname, address = :address, phone = :phone, email = :email, birthday = :birthday WHERE id = :id");
+            $update_stmt->bindParam(':firstname', $firstname);
+            $update_stmt->bindParam(':lastname', $lastname);
+            $update_stmt->bindParam(':address', $address);
+            $update_stmt->bindParam(':phone', $phone);
+            $update_stmt->bindParam(':email', $email);
+            $update_stmt->bindParam(':birthday', $birthday);
+            $update_stmt->bindParam(':id', $id);
+            $update_stmt->execute();
+    
+            header("location: employee_manageCus.php");
+        } catch (PDOException $e) {
+            $e->getMessage();
+        }
+    }
+    
+   
 ?>
 
 <!DOCTYPE html>
@@ -88,6 +109,7 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
+
             <!-- Nav Item - Order -->
             <li class="nav-item">
                 <a class="nav-link" href="employee_create_order.php">
@@ -113,7 +135,7 @@
                         <h6 class="collapse-header">จัดการข้อมูลสินค้า</h6>
                         <a class="collapse-item" href="employee_product.php">ข้อมูลสินค้า</a>
                         <a class="collapse-item" href="employee_stock.php">ข้อมูลสต็อกสินค้า</a>
-                        <a class="collapse-item" href="employee_order.php">ข้อมูลการขาย</a>
+                        <a class="collapse-item" href="">ข้อมูลการขาย</a>
                     </div>
                 </div>
             </li>
@@ -148,13 +170,7 @@
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <!-- Topbar Search -->
-                    <form method="POST" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" action="">
-                        <div>
-                            <input type="text" name="srh" class="form-control bg-light border-0 small" placeholder="Search for...">.
-                            <input type="submit" name="search" class="btn btn-primary" value="Search">
-                        </div>
-                    </form>
+
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -185,7 +201,7 @@
                         <!-- Nav Item - User Information -->
 
                         <li class="nav-item dropdown no-arrow">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <tbody>                                
                                     <tr>
                                         <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $rowuserdata['firstname']; ?> <?php echo $rowuserdata['lastname']; ?></span>
@@ -211,65 +227,54 @@
 
                 </nav>
                 <!-- End of Topbar -->
-
-
-                <div class="container-fluid">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">Stocks</li>
-                            <li class="breadcrumb-item active" aria-current="page">Overview</li>
-                        </ol>
-                    </nav>
-                    <h1 class="h2">ข้อมูลการสต็อกสินค้า</h1>
-                    <div class="row">
-                        <div class="col-12 col-xl-20 mb-4 mb-lg-0">
-                            <div class="card">
-                                <h5 class="card-header">Stocks List</h5>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col" style="text-align: center">วันที่ stock สินค้า</th>
-                                                    <th scope="col" style="text-align: center">ชื่อสินค้า</th>
-                                                    <th scope="col" style="text-align: center">จำนวนที่ stock สินค้า</th>
-                                                    <th scope="col" style="text-align: center"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php
-                                                if(isset($_POST['search'])) {
-                                                    $srh = $_POST['srh'];
-                                                    $check_data = $conn->prepare("SELECT * FROM stockpd WHERE date = '$srh' OR name = '$srh'
-                                                    OR amount = '$srh' ORDER BY date DESC");
-                                                    $check_data->execute();
-
-                                                } else {
-                                                    $check_data = $conn->prepare("SELECT * FROM stockpd ORDER BY date DESC");
-                                                    $check_data->execute();
-                                                }
-
-                                                while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                                ?>
-                                                    <form action="" method="POST">
-                                                        <tr>
-                                                            <td style="text-align: center"><?php echo $row['date']; ?></td>
-                                                            <td style="text-align: center"><?php echo $row['name']; ?></td>
-                                                            <td style="text-align: center"><?php echo $row['amount']; ?> ชิ้น</td>                 
-                                                            <td><a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
-                                                        </tr>
-                                                    </form>
-                                                <?php } ?>
-                                            </tbody>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <a href="" class="btn btn-block btn-light">View All</a>
+                <div class="container">
+                    <br>
+                    <tbody>
+                        <form action="" method="POST">
+                            <?php
+                            $id = $_REQUEST['update_id'];
+                            $select_stmt = $conn->prepare('SELECT * FROM customers WHERE id = :id');
+                            $select_stmt->bindParam(':id', $id);
+                            $select_stmt->execute();
+                            $row = $select_stmt->fetch(PDO::FETCH_ASSOC); {
+                            ?>
+                                <h2 style="text-align:center">แก้ไขข้อมูลลูกค้า</h2>
+                                <div class="mb-3">
+                                    <label for="firstname" class="form-label">ชื่อ</label>
+                                    <input type="text" class="form-control" name="firstname" aria-describebdy="firstname" value="<?php echo $row['firstname']; ?>" placeholder="<?php echo $row['firstname']; ?>">
                                 </div>
-                            </div>
-                        </div>
-                    </div>
+                                <div class="mb-3">
+                                    <label for="lastname" class="form-label">นามสกุล</label>
+                                    <input type="text" class="form-control" name="lastname" aria-describebdy="lastname" value="<?php echo $row['lastname']; ?>" placeholder="<?php echo $row['lastname']; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">ที่อยู่</label>
+                                    <input type="text" class="form-control" name="address" aria-describebdy="address" value="<?php echo $row['address']; ?>" placeholder="<?php echo $row['address']; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">เบอร์โทรศัพท์</label>
+                                    <input type="text" class="form-control" name="phone" aria-describebdy="phone" value="<?php echo $row['phone']; ?>" placeholder="<?php echo $row['phone']; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">อีเมล</label>
+                                    <input type="text" class="form-control" name="email" aria-describebdy="email" value="<?php echo $row['email']; ?>" placeholder="<?php echo $row['email']; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="birthday" class="form-label">วันเกิด</label>
+                                    <input type="date" class="form-control" name="birthday" aria-describebdy="birthday" value="<?php echo $row['birthday']; ?>">
+                                </div>
+                                <div>
+                                    <input type="submit" name="btn_update" class="btn btn-success" value="แก้ไขข้อมูล">
+                                    <a href="employee_manageCus.php" class="btn btn-danger">ยกเลิก</a>
+                                </div>
+                            <?php } ?>
+                        </form>
+                    </tbody>
                 </div>
+                
+
+
+                
 
                 <!-- Footer -->
                 <footer class="sticky-footer bg-white">
