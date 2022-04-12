@@ -6,6 +6,19 @@ if (!isset($_SESSION['admin_login'])) {
     header('location: index.php');
 }
 
+$firstname = $_SESSION['firstname'];
+$lastname = $_SESSION['lastname'];
+
+$userdata = $conn->prepare("SELECT * FROM users WHERE firstname = '$firstname' AND lastname = '$lastname'");
+$userdata->execute();
+$rowuserdata = $userdata->fetch(PDO::FETCH_ASSOC);
+
+if ($rowuserdata['urole'] != 'Admin') {
+    unset($_SESSION['user_login']);
+    unset($_SESSION['admin_login']);
+    header('location: index.php');
+}
+
 if (isset($_REQUEST['view_id'])) {
     try {
         $id = $_REQUEST['view_id'];
@@ -143,10 +156,7 @@ if (isset($_REQUEST['view_id'])) {
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <div>
-                    <a href="admin_order.php" class="btn btn-secondary">ย้อนกลับ</a>
-                    <a class="btn btn-success" href="" data-toggle="modal" data-target="#DTModal">ใบเสร็จ</a>
-                    </div>
+
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -177,11 +187,13 @@ if (isset($_REQUEST['view_id'])) {
                         <!-- Nav Item - User Information -->
 
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <tbody>
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <tbody>                                
+                                    <tr>
+                                        <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $rowuserdata['firstname']; ?> <?php echo $rowuserdata['lastname']; ?></span>
+                                    </tr>                                
                                 </tbody>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
-
+                                <img class="img-profile rounded-circle" src="upload/<?php echo $rowuserdata['image']; ?>">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
@@ -280,7 +292,13 @@ if (isset($_REQUEST['view_id'])) {
                                  echo number_format($row['total'],2)?></td>
                             </tr>
                             <tbody>
+                                
                         </table>
+                        <div>
+                            <br>
+                            <a href="admin_order.php" class="btn btn-secondary" style="float: right;">ย้อนกลับ</a>
+                            <a class="btn btn-success" href="" data-toggle="modal" data-target="#DTModal" style="float: right;">ใบเสร็จ</a>
+                        </div>
                     </div>                   
 
                     

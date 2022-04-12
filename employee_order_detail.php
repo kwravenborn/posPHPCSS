@@ -6,22 +6,19 @@
         header('location: index.php');
     }
 
-    if (isset($_REQUEST['delete_id'])) {
-        $id = $_REQUEST['delete_id'];
+    $firstname = $_SESSION['firstname'];
+    $lastname = $_SESSION['lastname'];
+    
+    $userdata = $conn->prepare("SELECT * FROM users WHERE firstname = '$firstname' AND lastname = '$lastname'");
+    $userdata->execute();
+    $rowuserdata = $userdata->fetch(PDO::FETCH_ASSOC);
 
-        $select_stmt = $conn->prepare('SELECT * FROM orders WHERE id = :id');
-        $select_stmt->bindParam(':id', $id);
-        $select_stmt->execute();
-        $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
-        unlink("upload/".$row['image']);
-        
-        $delete_stmt = $conn->prepare('DELETE FROM orders WHERE id = :id');
-        $delete_stmt->bindParam(':id', $id);
-        $delete_stmt->execute();
-
-        header("location: employee_product.php");
+    if ($rowuserdata['urole'] != 'Employee') {
+        unset($_SESSION['user_login']);
+        unset($_SESSION['admin_login']);
+        header('location: index.php');
     }
-
+    
     if (isset($_REQUEST['view_id'])) {
         try {
             $id = $_REQUEST['view_id'];
@@ -167,10 +164,6 @@
 
                     <!-- Topbar Search -->
                     <form method="POST" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" action="">
-                        <div>
-                        <a href="employee_order.php" class="btn btn-secondary">ย้อนกลับ</a>
-                        <a class="btn btn-success" href="" data-toggle="modal" data-target="#DTModal">ใบเสร็จ</a>
-                        </div>
                     </form>
 
                     <!-- Topbar Navbar -->
@@ -202,13 +195,13 @@
                         <!-- Nav Item - User Information -->
 
                         <li class="nav-item dropdown no-arrow">
-                            <tbody>
-                            </tbody>
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <tbody>
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <tbody>                                
+                                    <tr>
+                                        <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $rowuserdata['firstname']; ?> <?php echo $rowuserdata['lastname']; ?></span>
+                                    </tr>                                
                                 </tbody>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
-
+                                <img class="img-profile rounded-circle" src="upload/<?php echo $rowuserdata['image']; ?>">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
@@ -307,6 +300,11 @@
                             </tr>
                             <tbody>
                         </table>
+                        <div>
+                            <br>
+                            <a href="employee_order.php" class="btn btn-secondary" style="float: right;">ย้อนกลับ</a>
+                            <a class="btn btn-success" href="" data-toggle="modal" data-target="#DTModal" style="float: right;">ใบเสร็จ</a>
+                        </div>
                     </div>                   
 
                     

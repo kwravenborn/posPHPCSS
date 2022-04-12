@@ -8,6 +8,19 @@
         header('location: index.php');
     }
 
+    $firstname = $_SESSION['firstname'];
+    $lastname = $_SESSION['lastname'];
+    
+    $userdata = $conn->prepare("SELECT * FROM users WHERE firstname = '$firstname' AND lastname = '$lastname'");
+    $userdata->execute();
+    $rowuserdata = $userdata->fetch(PDO::FETCH_ASSOC);
+
+    if ($rowuserdata['urole'] != 'Employee') {
+        unset($_SESSION['user_login']);
+        unset($_SESSION['admin_login']);
+        header('location: index.php');
+    }
+    
     if(!empty($_GET["action"])) {
         switch($_GET["action"]) {
             case "add";
@@ -273,21 +286,13 @@
                         <!-- Nav Item - User Information -->
 
                         <li class="nav-item dropdown no-arrow">
-                            <tbody>
-
-                            </tbody>
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <tbody>
-
-                                        <form action="" method="POST">
-                                            <tr>
-                                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"></span>
-                                            </tr>
-                                        </form>
- 
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <tbody>                                
+                                    <tr>
+                                        <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $rowuserdata['firstname']; ?> <?php echo $rowuserdata['lastname']; ?></span>
+                                    </tr>                                
                                 </tbody>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
-
+                                <img class="img-profile rounded-circle" src="upload/<?php echo $rowuserdata['image']; ?>">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
@@ -312,7 +317,7 @@
                     <center><h2>รายการสั่งซื้อสินค้า</h2></center>
                 </div>
                 <div class="d-flex">
-                    <div style="height:600px;overflow-y: scroll;" class="shadow-sm col-6 p-4">
+                    <div style="height:600px;overflow-y: scroll;" class="shadow-sm col-6 p-3">
                         <div><center><h4>รายการสินค้า</h4></center>
                             <form action="" method="POST">
                                 <div class="input-group mb-3">

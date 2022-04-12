@@ -26,9 +26,13 @@
                         if ($password == $row['password']) {
                             if ($row['urole'] == 'Admin') {
                                 $_SESSION['admin_login'] = $row['id'];
+                                $_SESSION["firstname"] = $row["firstname"];
+                                $_SESSION["lastname"] = $row["lastname"];
                                 header("location: admin.php");
                             } else {
                                 $_SESSION['employee_login'] = $row['id'];
+                                $_SESSION["firstname"] = $row["firstname"];
+                                $_SESSION["lastname"] = $row["lastname"];
                                 header("location: employee.php");
                             }
                         } else {

@@ -6,10 +6,18 @@ if (!isset($_SESSION['admin_login'])) {
     header('location: index.php');
 }
 
+$firstname = $_SESSION['firstname'];
+$lastname = $_SESSION['lastname'];
 
+$userdata = $conn->prepare("SELECT * FROM users WHERE firstname = '$firstname' AND lastname = '$lastname'");
+$userdata->execute();
+$rowuserdata = $userdata->fetch(PDO::FETCH_ASSOC);
 
-
-
+if ($rowuserdata['urole'] != 'Admin') {
+    unset($_SESSION['user_login']);
+    unset($_SESSION['admin_login']);
+    header('location: index.php');
+}
 
 ?>
 
@@ -159,11 +167,12 @@ if (!isset($_SESSION['admin_login'])) {
 
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <tbody>
-
+                                <tbody>                                
+                                    <tr>
+                                        <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $rowuserdata['firstname']; ?> <?php echo $rowuserdata['lastname']; ?></span>
+                                    </tr>                                
                                 </tbody>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
-
+                                <img class="img-profile rounded-circle" src="upload/<?php echo $rowuserdata['image']; ?>">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">

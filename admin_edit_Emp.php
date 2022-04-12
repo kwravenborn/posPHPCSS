@@ -6,6 +6,19 @@ if (!isset($_SESSION['admin_login'])) {
     header('location: index.php');
 }
 
+$firstname = $_SESSION['firstname'];
+$lastname = $_SESSION['lastname'];
+
+$userdata = $conn->prepare("SELECT * FROM users WHERE firstname = '$firstname' AND lastname = '$lastname'");
+$userdata->execute();
+$rowuserdata = $userdata->fetch(PDO::FETCH_ASSOC);
+
+if ($rowuserdata['urole'] != 'Admin') {
+    unset($_SESSION['user_login']);
+    unset($_SESSION['admin_login']);
+    header('location: index.php');
+}
+
 if (isset($_REQUEST['update_id'])) {
     try {
         $id = $_REQUEST['update_id'];
@@ -222,22 +235,13 @@ if (isset($_REQUEST['btn_update'])) {
 
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <tbody>
-                                    <?php
-                                    $check_data = $conn->prepare("SELECT * FROM users ");
-                                    $check_data->execute();
-
-                                    while ($row = $check_data->fetch(PDO::FETCH_ASSOC)) {
-                                    ?>
-                                        <form action="admin_Emp.php" method="POST">
-                                            <tr>
-                                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $row['firstname']; ?> <?php echo $row['lastname']; ?></span>
-                                            </tr>
-                                        </form>
-                                    <?php } ?>
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <tbody>                                
+                                    <tr>
+                                        <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $rowuserdata['firstname']; ?> <?php echo $rowuserdata['lastname']; ?></span>
+                                    </tr>                                
                                 </tbody>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                                <img class="img-profile rounded-circle" src="upload/<?php echo $rowuserdata['image']; ?>">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
