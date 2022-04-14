@@ -35,6 +35,111 @@ if (isset($_REQUEST['delete_id'])) {
     header("location: admin_product.php");
 }
 
+if (isset($_POST['addstock'])) {
+    $product_num = $_POST['id'];
+    $amount = $_POST['amount'];
+    
+    $select_stmt = $conn->prepare('SELECT * FROM products WHERE product_num = :product_num');
+    $select_stmt->bindParam(':product_num', $product_num);
+    $select_stmt->execute();
+    $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $name = $row['name'];
+    $emp_name = $rowuserdata['firstname']." ".$rowuserdata['lastname'];
+    $stmt = $conn->prepare("INSERT INTO stockpd(name, amount, emp_name) 
+    VALUES(:name, :amount, :emp_name)");
+    $stmt->bindParam(":name", $name);
+    $stmt->bindParam(":amount", $amount);
+    $stmt->bindParam(":emp_name", $emp_name);
+    $stmt->execute();
+
+    $amount = ($_POST['amount'] + $row['amount']);
+    $status = "พร้อมขาย";
+
+    $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE product_num = :product_num");
+    $up_stmt->bindParam(":amount", $amount);
+    $up_stmt->bindParam(":status", $status);
+    $up_stmt->bindParam(":product_num", $product_num);
+    $up_stmt->execute();
+    header("location: admin_product.php"); 
+
+}
+
+if (isset($_POST['addproduct'])) {
+    $name = $_POST['name'];
+    $description = $_POST['description'];
+    $type = $_POST['type'];
+    $price = $_POST['price'];
+    $amount = 0;
+    $status = "ไม่พร้อมขาย";
+    $product_num = rand(0,9999)."1111".rand(0,99999);
+    
+    $image_file = $_FILES['file']['name'];
+    $itype = $_FILES['file']['type'];
+    $size = $_FILES['file']['size'];
+    $temp = $_FILES['file']['tmp_name'];
+
+    $path = "upload/" . $image_file;  //set upload folder path
+
+    if ($itype == "image/jpg" || $itype == "image/jpeg" || $itype == "image/png" || $itype == "image/gif") {
+        if (!file_exists($path)) {  // check file not exist in your upload folder path
+            if ($size < 5000000) {  // check file size
+                move_uploaded_file($temp, 'upload/'.$image_file); //move upload file temperary to upload folder
+            } else {
+                $errorMsg = "Your file too large.";
+            }
+        } else {
+            $errorMsg = "File already exists.";
+        }
+    } else {
+        $errorMsg = "Upload JPG, JPEG, PNG and GIF file formate.";
+    }
+
+    
+    try {
+        $check_productnum = $conn->prepare("SELECT product_num FROM products WHERE product_num = :product_num");
+        $check_productnum->bindParam(":product_num", $product_num);
+        $check_productnum->execute();
+        $row = $check_productnum->fetch(PDO::FETCH_ASSOC);
+
+        if($row['product_num'] == $product_num){
+            $product_num = rand(0,9999).rand(1000,9999).rand(0,99999);
+            $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type, product_num) 
+            VALUES(:name, :description, :price, :amount, :status, :image, :type ,:product_num)");
+            $stmt->bindParam(":name", $name);
+            $stmt->bindParam(":description", $description);
+            $stmt->bindParam(":price", $price);
+            $stmt->bindParam(":amount", $amount);
+            $stmt->bindParam(":status", $status);
+            $stmt->bindParam(":type", $type);
+            $stmt->bindParam(":product_num", $product_num);
+            $stmt->bindParam(":image", $image_file);
+            $stmt->execute();
+            $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
+            header("location: admin_product.php"); 
+        } else {
+            $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type, product_num) 
+            VALUES(:name, :description, :price, :amount, :status, :image, :type ,:product_num)");
+            $stmt->bindParam(":name", $name);
+            $stmt->bindParam(":description", $description);
+            $stmt->bindParam(":price", $price);
+            $stmt->bindParam(":amount", $amount);
+            $stmt->bindParam(":status", $status);
+            $stmt->bindParam(":type", $type);
+            $stmt->bindParam(":product_num", $product_num);
+            $stmt->bindParam(":image", $image_file);
+            $stmt->execute();
+            $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
+            header("location: admin_product.php"); 
+        }
+           
+
+    } catch (PDOException $e) {
+            echo $e->getMessage();
+    }
+}
+
+
 
 ?>
 
@@ -231,7 +336,7 @@ if (isset($_REQUEST['delete_id'])) {
 
                             <!-- Modal body -->
                             <div class="modal-body">
-                                <form action="admin_add_product.php" method="POST" class="form-horizontal" enctype="multipart/form-data">
+                                <form action="" method="POST" class="form-horizontal" enctype="multipart/form-data">
                                     <?php if (isset($_SESSION['error'])) { ?>
                                         <div class="alert alert-danger" role="alert">
                                             <?php
@@ -302,7 +407,7 @@ if (isset($_REQUEST['delete_id'])) {
 
                             <!-- Modal body -->
                             <div class="modal-body">
-                                <form action="admin_add_stock.php" method="POST">
+                                <form action="" method="POST">
                                     <?php if (isset($_SESSION['error'])) { ?>
                                         <div class="alert alert-danger" role="alert">
                                             <?php

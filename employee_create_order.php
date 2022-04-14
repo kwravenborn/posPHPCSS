@@ -111,11 +111,12 @@
                 $stmt->bindParam(":orders_num", $orders_num);
                 $stmt->execute();
 
-                $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num) VALUES(:cus_id, :description, :total, :orders_num)");
+                $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num, emp_id) VALUES(:cus_id, :description, :total, :orders_num, :emp_id)");
                 $stmt2->bindParam(":cus_id", $cus_id);
                 $stmt2->bindParam(":total", $totalPrice);
                 $stmt2->bindParam(":description", $description);
                 $stmt2->bindParam(":orders_num", $orders_num);
+                $stmt2->bindParam(":emp_id", $emp_id);
                 $stmt2->execute();
                 unset($_SESSION["cart_item"]);      
 

@@ -32,7 +32,7 @@
         $delete_stmt->bindParam(':id', $id);
         $delete_stmt->execute();
 
-        header("location: employee_stockpd.php");
+        header("location: employee_stock.php");
     }
     
 
@@ -256,7 +256,7 @@
                                                             <td style="text-align: center"><?php echo $row['date']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['amount']; ?> ชิ้น</td>                 
-                                                            <td><a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
+                                                            <td><a href="employee_stock.php?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
                                                         </tr>
                                                     </form>
                                                 <?php } ?>

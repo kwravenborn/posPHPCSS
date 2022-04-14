@@ -116,10 +116,12 @@
         $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
         
         $name = $row['name'];
-        $stmt = $conn->prepare("INSERT INTO stockpd(name, amount) 
-        VALUES(:name, :amount)");
+        $emp_name = $rowuserdata['firstname']." ".$rowuserdata['lastname'];
+        $stmt = $conn->prepare("INSERT INTO stockpd(name, amount, emp_name) 
+        VALUES(:name, :amount, :emp_name)");
         $stmt->bindParam(":name", $name);
         $stmt->bindParam(":amount", $amount);
+        $stmt->bindParam(":emp_name", $emp_name);
         $stmt->execute();
 
         $amount = ($_POST['amount'] + $row['amount']);
