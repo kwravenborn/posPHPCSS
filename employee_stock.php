@@ -233,6 +233,7 @@
                                                     <th scope="col" style="text-align: center">วันที่ stock สินค้า</th>
                                                     <th scope="col" style="text-align: center">ชื่อสินค้า</th>
                                                     <th scope="col" style="text-align: center">จำนวนที่ stock สินค้า</th>
+                                                    <th scope="col" style="text-align: center">พนักงานที่สต็อกสินค้า</th>
                                                     <th scope="col" style="text-align: center"></th>
                                                 </tr>
                                             </thead>
@@ -255,7 +256,8 @@
                                                         <tr>
                                                             <td style="text-align: center"><?php echo $row['date']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
-                                                            <td style="text-align: center"><?php echo $row['amount']; ?> ชิ้น</td>                 
+                                                            <td style="text-align: center"><?php echo $row['amount']; ?> ชิ้น</td> 
+                                                            <td style="text-align: center"><?php echo $row['emp_name']; ?></td>                
                                                             <td><a href="employee_stock.php?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
                                                         </tr>
                                                     </form>

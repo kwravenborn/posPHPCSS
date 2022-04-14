@@ -19,6 +19,22 @@ if ($rowuserdata['urole'] != 'Admin') {
     header('location: index.php');
 }
 
+if (isset($_REQUEST['delete_id'])) {
+    $id = $_REQUEST['delete_id'];
+
+    $select_stmt = $conn->prepare('SELECT * FROM stockpd WHERE id = :id');
+    $select_stmt->bindParam(':id', $id);
+    $select_stmt->execute();
+    $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+    unlink("upload/".$row['image']);
+    
+    $delete_stmt = $conn->prepare('DELETE FROM stockpd WHERE id = :id');
+    $delete_stmt->bindParam(':id', $id);
+    $delete_stmt->execute();
+
+    header("location: admin_stock.php");
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -222,6 +238,7 @@ if ($rowuserdata['urole'] != 'Admin') {
                                                     <th scope="col" style="text-align: center">วันที่ stock สินค้า</th>
                                                     <th scope="col" style="text-align: center">ชื่อสินค้า</th>
                                                     <th scope="col" style="text-align: center">จำนวนที่ stock สินค้า</th>
+                                                    <th scope="col" style="text-align: center">พนักงานที่สต็อกสินค้า</th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
@@ -248,6 +265,7 @@ if ($rowuserdata['urole'] != 'Admin') {
                                                             <td style="text-align: center"><?php echo $row['date']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['amount']; ?> ชิ้น</td>
+                                                            <td style="text-align: center"><?php echo $row['emp_name']; ?></td>
                                                             
                                                             <td><a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
                                                         </tr>
