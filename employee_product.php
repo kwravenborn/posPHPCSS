@@ -492,7 +492,7 @@
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
                                                             <td style="text-align: center"><?php echo iconv_substr($row['description'],0,50,'UTF-8')."..."; ?></td>
                                                             <td style="text-align: center"><?php echo $row['type']; ?></td>
-                                                            <td style="text-align: center"><?php echo number_format($row['price']); ?></td>
+                                                            <td style="text-align: center"><?php echo number_format($row['price'],2); ?></td>
                                                             <td style="text-align: center"><?php if($row['amount'] == 0){
                                                                 echo "หมด";
                                                             } else {

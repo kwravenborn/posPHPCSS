@@ -263,7 +263,7 @@ if (isset($_POST['addproduct'])) {
                     <form method="POST" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" action="">
                         <div>
                             <input type="text" name="srh" class="form-control bg-light border-0 small" placeholder="Search for...">.
-                            <input type="submit" name="search" class="btn btn-primary">
+                            <input type="submit" name="search" class="btn btn-primary" value="Search">
                         </div>
                     </form>
 
@@ -479,7 +479,7 @@ if (isset($_POST['addproduct'])) {
                                                     <th scope="col" style="text-align: center">คำอธิบาย</th>
                                                     <th scope="col" style="text-align: center">ประเภท</th>
                                                     <th scope="col" style="text-align: center">ราคา (บาท)</th>
-                                                    <th scope="col" style="text-align: center" width=100>สินค้าคงเหลือ (ชิ้น)</th>
+                                                    <th scope="col" style="text-align: center" width=200>สินค้าคงเหลือ (ชิ้น)</th>
                                                     <th scope="col" style="text-align: center" width=100>สถานะ</th>
                                                 </tr>
                                             </thead>

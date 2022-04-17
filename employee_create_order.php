@@ -59,84 +59,33 @@
                 }
             break;
             case "sale";
-            $ctitem = array($_SESSION["cart_item"]);
-            $count = 0;
-            $orders_num = rand(0,9999)."2222".rand(0,99999);
-            $emp_id = $rowuserdata['id'];
-            $cus_id = $_GET['id'];
+                $ctitem = array($_SESSION["cart_item"]);
+                $count = 0;
+                $orders_num = rand(0,9999)."2222".rand(0,99999);
+                $emp_id = $rowuserdata['id'];
+                $cus_id = $_GET['id'];
 
-            $totalPrice = 0;
-            $description = "";
+                $totalPrice = 0;
+                $description = "";
 
-            
-            foreach ($ctitem as $ct) {
-                $count+= count($ct);
-            }
-            
-            if ($count == 1){
-
-                $ctitem = array_values($_SESSION["cart_item"]);
-                $item = ($ctitem[0]);
-                $name = $item['name'];
-                $qty = $item['quantity'];
-                $price = $item['price'];
-                $image = $item['image'];
-                $ttprice = $qty * $price;
-                $totalPrice = $totalPrice + $ttprice;
-                $description = $item['name']." (".$item['quantity'].")";
-
-
-                $data_product = $conn->prepare("SELECT * FROM products WHERE name = '$name'");
-                $data_product->execute();
-                $datapd = $data_product->fetch(PDO::FETCH_ASSOC);
-                $datapd['amount'] = $datapd['amount'] - $qty;
-                if($datapd['amount'] == 0){
-                    $datapd['status'] = "ไม่พร้อมขาย";
+                
+                foreach ($ctitem as $ct) {
+                    $count+= count($ct);
                 }
+                
+                if ($count == 1){
 
-                $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE name = :name");
-                $up_stmt->bindParam(":amount", $datapd['amount']);
-                $up_stmt->bindParam(":status", $datapd['status']);
-                $up_stmt->bindParam(":name", $name);
-                $up_stmt->execute();
-
-                $stmt = $conn->prepare("INSERT INTO order_detail(name, qty, price, cus_id, emp_id, image, orders_num) 
-                VALUES(:name, :qty, :price, :cus_id, :emp_id, :image, :orders_num)");
-                $stmt->bindParam(":name", $name);
-                $stmt->bindParam(":qty", $qty);
-                $stmt->bindParam(":price", $ttprice);
-                $stmt->bindParam(":cus_id", $cus_id);
-                $stmt->bindParam(":emp_id", $emp_id);
-                $stmt->bindParam(":image", $image);
-                $stmt->bindParam(":orders_num", $orders_num);
-                $stmt->execute();
-
-                $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num, emp_id) VALUES(:cus_id, :description, :total, :orders_num, :emp_id)");
-                $stmt2->bindParam(":cus_id", $cus_id);
-                $stmt2->bindParam(":total", $totalPrice);
-                $stmt2->bindParam(":description", $description);
-                $stmt2->bindParam(":orders_num", $orders_num);
-                $stmt2->bindParam(":emp_id", $emp_id);
-                $stmt2->execute();
-                unset($_SESSION["cart_item"]);      
-
-            } elseif ($count > 1 && $count != 0) {
-                for($i = 0; $i < $count; $i++){
-
-                    $item = ($ctitem[0][$i]);
+                    $ctitem = array_values($_SESSION["cart_item"]);
+                    $item = ($ctitem[0]);
                     $name = $item['name'];
                     $qty = $item['quantity'];
                     $price = $item['price'];
                     $image = $item['image'];
                     $ttprice = $qty * $price;
                     $totalPrice = $totalPrice + $ttprice;
-    
-                    if($i == 0){
-                        $description = $item['name']." (".$item['quantity'].")";
-                    } else {
-                        $description = $description.", ".$item['name']." (".$item['quantity'].")";
-                    }
-                    
+                    $description = $item['name']." (".$item['quantity'].")";
+
+
                     $data_product = $conn->prepare("SELECT * FROM products WHERE name = '$name'");
                     $data_product->execute();
                     $datapd = $data_product->fetch(PDO::FETCH_ASSOC);
@@ -144,13 +93,13 @@
                     if($datapd['amount'] == 0){
                         $datapd['status'] = "ไม่พร้อมขาย";
                     }
-    
+
                     $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE name = :name");
                     $up_stmt->bindParam(":amount", $datapd['amount']);
                     $up_stmt->bindParam(":status", $datapd['status']);
                     $up_stmt->bindParam(":name", $name);
                     $up_stmt->execute();
-    
+
                     $stmt = $conn->prepare("INSERT INTO order_detail(name, qty, price, cus_id, emp_id, image, orders_num) 
                     VALUES(:name, :qty, :price, :cus_id, :emp_id, :image, :orders_num)");
                     $stmt->bindParam(":name", $name);
@@ -161,29 +110,95 @@
                     $stmt->bindParam(":image", $image);
                     $stmt->bindParam(":orders_num", $orders_num);
                     $stmt->execute();
-    
-                }    
-                       
-                $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num) VALUES(:cus_id, :description, :total, :orders_num)");
-                $stmt2->bindParam(":cus_id", $cus_id);
-                $stmt2->bindParam(":total", $totalPrice);
-                $stmt2->bindParam(":description", $description);
-                $stmt2->bindParam(":orders_num", $orders_num);
-                $stmt2->execute();
-                unset($_SESSION["cart_item"]);                
-            }
 
+                    $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num, emp_id) VALUES(:cus_id, :description, :total, :orders_num, :emp_id)");
+                    $stmt2->bindParam(":cus_id", $cus_id);
+                    $stmt2->bindParam(":total", $totalPrice);
+                    $stmt2->bindParam(":description", $description);
+                    $stmt2->bindParam(":orders_num", $orders_num);
+                    $stmt2->bindParam(":emp_id", $emp_id);
+                    $stmt2->execute();
+                    unset($_SESSION["cart_item"]);      
+
+                } elseif ($count > 1 && $count != 0) {
+                    for($i = 0; $i < $count; $i++){
+
+                        $item = ($ctitem[0][$i]);
+                        $name = $item['name'];
+                        $qty = $item['quantity'];
+                        $price = $item['price'];
+                        $image = $item['image'];
+                        $ttprice = $qty * $price;
+                        $totalPrice = $totalPrice + $ttprice;
+        
+                        if($i == 0){
+                            $description = $item['name']." (".$item['quantity'].")";
+                        } else {
+                            $description = $description.", ".$item['name']." (".$item['quantity'].")";
+                        }
+                        
+                        $data_product = $conn->prepare("SELECT * FROM products WHERE name = '$name'");
+                        $data_product->execute();
+                        $datapd = $data_product->fetch(PDO::FETCH_ASSOC);
+                        $datapd['amount'] = $datapd['amount'] - $qty;
+                        if($datapd['amount'] == 0){
+                            $datapd['status'] = "ไม่พร้อมขาย";
+                        }
+        
+                        $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE name = :name");
+                        $up_stmt->bindParam(":amount", $datapd['amount']);
+                        $up_stmt->bindParam(":status", $datapd['status']);
+                        $up_stmt->bindParam(":name", $name);
+                        $up_stmt->execute();
+        
+                        $stmt = $conn->prepare("INSERT INTO order_detail(name, qty, price, cus_id, emp_id, image, orders_num) 
+                        VALUES(:name, :qty, :price, :cus_id, :emp_id, :image, :orders_num)");
+                        $stmt->bindParam(":name", $name);
+                        $stmt->bindParam(":qty", $qty);
+                        $stmt->bindParam(":price", $ttprice);
+                        $stmt->bindParam(":cus_id", $cus_id);
+                        $stmt->bindParam(":emp_id", $emp_id);
+                        $stmt->bindParam(":image", $image);
+                        $stmt->bindParam(":orders_num", $orders_num);
+                        $stmt->execute();
+        
+                    }    
+                        
+                    $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num) VALUES(:cus_id, :description, :total, :orders_num)");
+                    $stmt2->bindParam(":cus_id", $cus_id);
+                    $stmt2->bindParam(":total", $totalPrice);
+                    $stmt2->bindParam(":description", $description);
+                    $stmt2->bindParam(":orders_num", $orders_num);
+                    $stmt2->execute();
+                    unset($_SESSION["cart_item"]);                
+                }
             break;
             case "remove";
                 if(!empty($_SESSION["cart_item"])) {
-                    foreach($_SESSION["cart_item"] as $k => $v) {
-                        if($_GET["id"] == $k) {
-                            unset($_SESSION["cart_item"][$k]);
-                        }
-                        if(empty($_SESSION["cart_item"])) {
-                            unset($_SESSION["cart_item"]);
-                        }
+                    $ctitem = array($_SESSION["cart_item"]);
+                    $count = 0;
+                    foreach ($ctitem as $ct) {
+                        $count+= count($ct);
                     }
+                    $id = $_GET['id'];
+                    if($count == 1){
+                        unset($_SESSION["cart_item"]);
+                    } else {
+                        $productById = $db_handle->runQuery("SELECT * FROM products WHERE id = $id");
+                        $pdname = $productById[0]['name'];
+                        $pdid = $productById[0]['id'];
+                        for($i = 0; $i < $count; $i++) {
+                            if ($_SESSION["cart_item"][$i]['id'] == $pdid){
+                                unset($_SESSION["cart_item"][$i]);
+                                break;
+                            }
+                        }
+                    }     
+
+                    if(empty($_SESSION["cart_item"])) {
+                        unset($_SESSION["cart_item"]);
+                    }
+                    
                 }
             break;
             case "empty";
@@ -425,7 +440,7 @@
                         </div>
                         <div>
                         <form action="" method="GET">
-                                <label for="">ลูกค้า</label>
+                                <label style="color: black" for="">ลูกค้า</label>
                                 <select name="cus_id">
                                 <option value="">--เลือกลูกค้า--</option>
                                 <?php 
@@ -436,7 +451,7 @@
                                 <?php  } ?>                
                                 </select>           
                                 <button class="btn-xs btn-info" type="submit">+</button>
-                                
+                                <h99 style="color: red;font-size: 14px;">**กรุณากดปุ่ม + เพื่อเลือกลูกค้า**</h99>
                             </form>   
                         </div>
                         <?php

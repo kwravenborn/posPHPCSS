@@ -252,7 +252,7 @@ if (isset($_REQUEST['btn_update'])) {
                     <br>
                     <tbody>
                         <form action="" method="POST" class="form-horizontal" enctype="multipart/form-data">                        
-                                <h2 style="text-align:center">แก้ไขข้อมูลพนักงาน</h2>
+                                <h2 style="text-align:center">แก้ไขข้อมูลผู้ใช้งาน</h2>
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Username</label>
                                     <input readonly type="text" class="form-control" name="username" aria-describebdy="username" value="<?php echo $rowuserdata['username']; ?>" placeholder="<?php echo $rowuserdata['username']; ?>">

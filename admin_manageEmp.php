@@ -273,7 +273,7 @@
                     <form method="POST" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" action="">
                         <div>
                             <input type="text" name="srh" class="form-control bg-light border-0 small" placeholder="Search for...">.
-                            <input type="submit" name="search" class="btn btn-primary">
+                            <input type="submit" name="search" class="btn btn-primary" value="Search">
                         </div>
                     </form>
 
