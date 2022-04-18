@@ -41,23 +41,43 @@ if (isset($_POST['addcustomer'])) {
     $phone = $_POST['phone'];
     $email = $_POST['email'];
     $birthday = $_POST['birthday'];
-    
-    try {
-        $stmt = $conn->prepare("INSERT INTO customers(firstname, lastname, address, phone, email, birthday) 
-        VALUES(:firstname, :lastname, :address, :phone, :email, :birthday)");
-        $stmt->bindParam(":firstname", $firstname);
-        $stmt->bindParam(":lastname", $lastname);
-        $stmt->bindParam(":address", $address);
-        $stmt->bindParam(":phone", $phone);
-        $stmt->bindParam(":email", $email);
-        $stmt->bindParam(":birthday", $birthday);
-        $stmt->execute();
-        $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
-        header("location: admin_manageCus.php");                
 
-    } catch (PDOException $e) {
-            echo $e->getMessage();
+    if (empty($firstname)) {
+        $_SESSION['error'] = 'กรุณากรอกชื่อ';
+    } else if(empty($lastname)) {
+        $_SESSION['error'] = 'กรุณากรอกนามสกุล';
+    } else if(empty($address)) {
+        $_SESSION['error'] = 'กรุณากรอกที่อยู่';
+    }  else if(empty($phone)) {
+        $_SESSION['error'] = 'กรุณากรอกเบอรโทรศัพท์';
+    } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['error'] = 'รูปแบบอีเมลไม่ถูกต้อง';
+    } else if(empty($phone)) {
+        $_SESSION['error'] = 'กรุณากรอกเบอรโทรศัพท์';
+    } else if (empty($email)) {
+        $_SESSION['error'] = 'กรุณากรอกอีเมล';
+    } else if (preg_match("/^[0-9]{10}$/", $phone)) {
+        try {
+            $stmt = $conn->prepare("INSERT INTO customers(firstname, lastname, address, phone, email, birthday) 
+            VALUES(:firstname, :lastname, :address, :phone, :email, :birthday)");
+            $stmt->bindParam(":firstname", $firstname);
+            $stmt->bindParam(":lastname", $lastname);
+            $stmt->bindParam(":address", $address);
+            $stmt->bindParam(":phone", $phone);
+            $stmt->bindParam(":email", $email);
+            $stmt->bindParam(":birthday", $birthday);
+            $stmt->execute();
+            $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
+                
+    
+        } catch (PDOException $e) {
+                echo $e->getMessage();
+        }
+    }  else {
+        $_SESSION['error'] = "เบอร์โทรศัพท์ไม่ถูกต้อง";
     }
+    
+
 }
 ?>
 <!DOCTYPE html>
@@ -253,30 +273,7 @@ if (isset($_POST['addcustomer'])) {
                             <!-- Modal body -->
                             <div class="modal-body">
                                 <form action="" method="POST">
-                                    <?php if (isset($_SESSION['error'])) { ?>
-                                        <div class="alert alert-danger" role="alert">
-                                            <?php
-                                            echo $_SESSION['error'];
-                                            unset($_SESSION['error']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['success'])) { ?>
-                                        <div class="alert alert-success" role="alert">
-                                            <?php
-                                            echo $_SESSION['success'];
-                                            unset($_SESSION['success']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['warning'])) { ?>
-                                        <div class="alert alert-warning" role="alert">
-                                            <?php
-                                            echo $_SESSION['warning'];
-                                            unset($_SESSION['warning']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
+
                                     <div class="mb-3">
                                         <label for="firstname" class="form-label">ชื่อ</label>
                                         <input type="text" class="form-control" name="firstname" aria-describebdy="firstname">
@@ -322,6 +319,22 @@ if (isset($_POST['addcustomer'])) {
                     <h1 class="h2">รายชื่อลูกค้า
                         <a href="" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">เพิ่มข้อมูล <i data-feather="plus"></i></a>
                     </h1>
+                    <?php if (isset($_SESSION['success'])) { ?>
+                                        <div class="alert alert-success" role="alert">
+                                            <?php
+                                            echo $_SESSION['success'];
+                                            unset($_SESSION['success']);
+                                            ?>
+                                        </div>
+                    <?php } ?>
+                    <?php if (isset($_SESSION['error'])) { ?>
+                                        <div class="alert alert-danger" role="alert">
+                                            <?php
+                                            echo $_SESSION['error'];
+                                            unset($_SESSION['error']);
+                                            ?>
+                                        </div>
+                    <?php } ?>
                     <div class="row">
                         <div class="col-12 col-xl-20 mb-4 mb-lg-0">
                             <div class="card">

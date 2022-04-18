@@ -64,45 +64,37 @@
             $errorMsg = "Upload JPG, JPEG, PNG and GIF file formate.";
         }
 
-        
-        try {
-            $check_productnum = $conn->prepare("SELECT product_num FROM products WHERE product_num = :product_num");
-            $check_productnum->bindParam(":product_num", $product_num);
-            $check_productnum->execute();
-            $row = $check_productnum->fetch(PDO::FETCH_ASSOC);
-
-            if($row['product_num'] == $product_num){
-                $product_num = rand(0,9999).rand(1000,9999).rand(0,99999);
-                $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type, product_num) 
-                VALUES(:name, :description, :price, :amount, :status, :image, :type ,:product_num)");
-                $stmt->bindParam(":name", $name);
-                $stmt->bindParam(":description", $description);
-                $stmt->bindParam(":price", $price);
-                $stmt->bindParam(":amount", $amount);
-                $stmt->bindParam(":status", $status);
-                $stmt->bindParam(":type", $type);
-                $stmt->bindParam(":product_num", $product_num);
-                $stmt->bindParam(":image", $image_file);
-                $stmt->execute();
-                $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
-                header("location: employee_product.php"); 
-            } else {
-                $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type, product_num) 
-                VALUES(:name, :description, :price, :amount, :status, :image, :type ,:product_num)");
-                $stmt->bindParam(":name", $name);
-                $stmt->bindParam(":description", $description);
-                $stmt->bindParam(":price", $price);
-                $stmt->bindParam(":amount", $amount);
-                $stmt->bindParam(":status", $status);
-                $stmt->bindParam(":type", $type);
-                $stmt->bindParam(":product_num", $product_num);
-                $stmt->bindParam(":image", $image_file);
-                $stmt->execute();
-                $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
-                header("location: employee_product.php"); 
+        if (empty($name)) {
+            $_SESSION['error'] = 'กรุณากรอกชื่อสินค้า';
+        } else if(empty($description)) {
+            $_SESSION['error'] = 'กรุณากรอกคำอธิบาย';
+        } else if(empty($type)) {
+            $_SESSION['error'] = 'กรุณากรอกประเภทสินค้า';
+        } else if(empty($price)) {
+            $_SESSION['error'] = 'กรุณากรอกราคา';
+        } else if(empty($image_file)){
+            $_SESSION['error'] = 'กรุณาอัปโหลดรูปภาพ';
+        } else if($price){
+            if(is_numeric($price)){
+                try {
+                    $stmt = $conn->prepare("INSERT INTO products(name, description, price, amount, status, image, type, product_num) 
+                    VALUES(:name, :description, :price, :amount, :status, :image, :type ,:product_num)");
+                    $stmt->bindParam(":name", $name);
+                    $stmt->bindParam(":description", $description);
+                    $stmt->bindParam(":price", $price);
+                    $stmt->bindParam(":amount", $amount);
+                    $stmt->bindParam(":status", $status);
+                    $stmt->bindParam(":type", $type);
+                    $stmt->bindParam(":product_num", $product_num);
+                    $stmt->bindParam(":image", $image_file);
+                    $stmt->execute();
+                    $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว"; 
+            } catch (PDOException $e) {
+                    echo $e->getMessage();
             }
-        } catch (PDOException $e) {
-                echo $e->getMessage();
+            } else {
+                $_SESSION['error'] = 'กรุณากรอกราคาเป็นตัวเลข เช่น 100 หรือ 100.5';
+            }
         }
     }
 
@@ -110,29 +102,41 @@
         $product_num = $_POST['id'];
         $amount = $_POST['amount'];
         
-        $select_stmt = $conn->prepare('SELECT * FROM products WHERE product_num = :product_num');
-        $select_stmt->bindParam(':product_num', $product_num);
-        $select_stmt->execute();
-        $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
-        
-        $name = $row['name'];
-        $emp_name = $rowuserdata['firstname']." ".$rowuserdata['lastname'];
-        $stmt = $conn->prepare("INSERT INTO stockpd(name, amount, emp_name) 
-        VALUES(:name, :amount, :emp_name)");
-        $stmt->bindParam(":name", $name);
-        $stmt->bindParam(":amount", $amount);
-        $stmt->bindParam(":emp_name", $emp_name);
-        $stmt->execute();
+        if (empty($product_num)) {
+            $_SESSION['error'] = 'กรุณากรอกรหัสสินค้า';
+        } else if(empty($amount)) {
+            $_SESSION['error'] = 'กรุณากรอกจำนวนสินค้า';
+        } else if($amount){
+            if (is_numeric($amount)){
+                $select_stmt = $conn->prepare('SELECT * FROM products WHERE product_num = :product_num');
+                $select_stmt->bindParam(':product_num', $product_num);
+                $select_stmt->execute();
+                $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+                
+                $name = $row['name'];
+                $emp_name = $rowuserdata['firstname']." ".$rowuserdata['lastname'];
+                $stmt = $conn->prepare("INSERT INTO stockpd(name, amount, emp_name) 
+                VALUES(:name, :amount, :emp_name)");
+                $stmt->bindParam(":name", $name);
+                $stmt->bindParam(":amount", $amount);
+                $stmt->bindParam(":emp_name", $emp_name);
+                $stmt->execute();
+            
+                $amount = ($_POST['amount'] + $row['amount']);
+                $status = "พร้อมขาย";
+            
+                $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE product_num = :product_num");
+                $up_stmt->bindParam(":amount", $amount);
+                $up_stmt->bindParam(":status", $status);
+                $up_stmt->bindParam(":product_num", $product_num);
+                $up_stmt->execute();
+                $_SESSION['success'] = 'เพิ่มจำนวนสต็อกสินค้าเรียบร้อยแล้ว';
+            } else {
+                $_SESSION['error'] = 'กรุณากรอกจำนวนสินค้าเป็นตัวเลข เช่น 5';
+            }
 
-        $amount = ($_POST['amount'] + $row['amount']);
-        $status = "พร้อมขาย";
+        }
 
-        $up_stmt = $conn->prepare("UPDATE products SET amount = :amount, status = :status WHERE product_num = :product_num");
-        $up_stmt->bindParam(":amount", $amount);
-        $up_stmt->bindParam(":status", $status);
-        $up_stmt->bindParam(":product_num", $product_num);
-        $up_stmt->execute();
-        header("location: employee_product.php"); 
 
     }
 ?>
@@ -324,30 +328,6 @@
                             <!-- Modal body -->
                             <div class="modal-body">
                                 <form action="" method="POST" class="form-horizontal" enctype="multipart/form-data">
-                                    <?php if (isset($_SESSION['error'])) { ?>
-                                        <div class="alert alert-danger" role="alert">
-                                            <?php
-                                            echo $_SESSION['error'];
-                                            unset($_SESSION['error']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['success'])) { ?>
-                                        <div class="alert alert-success" role="alert">
-                                            <?php
-                                            echo $_SESSION['success'];
-                                            unset($_SESSION['success']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['warning'])) { ?>
-                                        <div class="alert alert-warning" role="alert">
-                                            <?php
-                                            echo $_SESSION['warning'];
-                                            unset($_SESSION['warning']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
                                     <div class="mb-3">
                                         <label for="name" class="form-label">ชื่อสินค้า</label>
                                         <input type="text" class="form-control" name="name" aria-describebdy="name">
@@ -395,30 +375,6 @@
                             <!-- Modal body -->
                             <div class="modal-body">
                                 <form action="" method="POST">
-                                    <?php if (isset($_SESSION['error'])) { ?>
-                                        <div class="alert alert-danger" role="alert">
-                                            <?php
-                                            echo $_SESSION['error'];
-                                            unset($_SESSION['error']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['success'])) { ?>
-                                        <div class="alert alert-success" role="alert">
-                                            <?php
-                                            echo $_SESSION['success'];
-                                            unset($_SESSION['success']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['warning'])) { ?>
-                                        <div class="alert alert-warning" role="alert">
-                                            <?php
-                                            echo $_SESSION['warning'];
-                                            unset($_SESSION['warning']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
                                     <div class="mb-3">
                                         <label for="id" class="form-label">รหัสสินค้า</label>
                                         <input type="text" class="form-control" name="id" aria-describebdy="id">
@@ -451,6 +407,22 @@
                         <a href="" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">เพิ่มข้อมูล <i data-feather="plus"></i></a>
                         <a href="" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addStock">เพิ่ม Stock <i data-feather="plus"></i></a>
                     </h1>
+                    <?php if (isset($_SESSION['error'])) { ?>
+                                        <div class="alert alert-danger" role="alert">
+                                            <?php
+                                            echo $_SESSION['error'];
+                                            unset($_SESSION['error']);
+                                            ?>
+                                        </div>
+                    <?php } ?>
+                    <?php if (isset($_SESSION['success'])) { ?>
+                                        <div class="alert alert-success" role="alert">
+                                            <?php
+                                            echo $_SESSION['success'];
+                                            unset($_SESSION['success']);
+                                            ?>
+                                        </div>
+                    <?php } ?>
                     <div class="row">
                         <div class="col-12 col-xl-20 mb-4 mb-lg-0">
                             <div class="card">

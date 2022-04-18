@@ -44,7 +44,7 @@
         $email = $_POST['email'];
         $birthday = $_POST['birthday'];
         $password = MD5($_POST['password']);
-        $c_password = MD5($_POST['password']);
+        $c_password = MD5($_POST['c_password']);
         $urole = $_POST['urole'];
         $image_file = $_FILES['file']['name'];
         $type = $_FILES['file']['type'];
@@ -71,47 +71,47 @@
         
         if (empty($username)) {
             $_SESSION['error'] = 'กรุณากรอก username';
-            header("location: admin_manageEmp.php");
+
         } else if (empty($firstname)) {
             $_SESSION['error'] = 'กรุณากรอกชื่อ';
-            header("location: admin_manageEmp.php");
+
         } else if (empty($lastname)) {
             $_SESSION['error'] = 'กรุณากรอกนามสกุล';
-            header("location: admin_manageEmp.php");
+
         } else if (empty($address)) {
             $_SESSION['error'] = 'กรุณากรอกที่อยู่';
-            header("location: admin_manageEmp.php");
+
         } else if (empty($phone)) {
             $_SESSION['error'] = 'กรุณากรอกเบอร์โทรศัพท์';
-            header("location: admin_manageEmp.php");
+
         } else if (strlen($_POST['phone']) != 10) {
             $_SESSION['error'] = 'เบอร์โทรศัพท์ต้องมีความยาว 10 ตัวอักษร';
-            header("location: admin_manageEmp.php");
+
         } else if (empty($email)) {
             $_SESSION['error'] = 'กรุณากรอกอีเมล';
-            header("location: admin_manageEmp.php");
+
         } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['error'] = 'รูปแบบอีเมลไม่ถูกต้อง';
-            header("location: admin_manageEmp.php");
+
         } else if (empty($birthday)) {
             $_SESSION['error'] = 'กรุณากรอกวันเกิด';
-            header("location: admin_manageEmp.php");
+
         } else if (empty($password)) {
             $_SESSION['error'] = 'กรุณากรอกรหัสผ่าน';
-            header("location: admin_manageEmp.php");
+
         } else if (strlen($_POST['password']) > 20 || strlen($_POST['password']) < 5) {
             $_SESSION['error'] = 'รหัสผ่านต้องมีความยาวระหว่าง 5 ถึง 20 ตัวอักษร';
-            header("location: admin_manageEmp.php");
+
         } else if (empty($c_password)) {
             $_SESSION['error'] = 'กรุณายืนยันรหัสผ่านอีกครั้ง';
-            header("location: admin_manageEmp.php");
+
         } else if ($password != $c_password) {
             $_SESSION['error'] = 'รหัสผ่านไม่ตรงกัน';
-            header("location: admin_manageEmp.php");
+
         } else if (empty($image_file)) {
             $_SESSION['error'] = 'กรุณาอัพโหลดรูปภาพ';
-            header("location: admin_manageEmp.php");
-        } else {
+
+        } else if (preg_match("/^[0-9]{10}$/", $phone)) {
             try {
 
                 $check_username = $conn->prepare("SELECT username FROM users WHERE username = :username");
@@ -120,8 +120,8 @@
                 $row = $check_username->fetch(PDO::FETCH_ASSOC);
 
                 if ($row['username'] == $username) {
-                    $_SESSION['warning'] = 'มี username นี้อยู่ในระบบแล้ว';
-                    header("location: admin_manageEmp.php");
+                    $_SESSION['error'] = 'มี username นี้อยู่ในระบบแล้ว';
+        
                 } else if (!isset($_SESSION['error'])) {
                     $stmt = $conn->prepare("INSERT INTO users(username, firstname, lastname, address, phone, email, birthday, password , urole, image) 
                     VALUES(:username, :firstname, :lastname, :address, :phone, :email, :birthday, :password, :urole, :image)");
@@ -137,16 +137,18 @@
                     $stmt->bindParam(":image", $image_file);
                     $stmt->execute();
                     $_SESSION['success'] = "เพิ่มข้อมูลเรียบร้อยแล้ว";
-                    header("location: admin_manageEmp.php");
+        
 
                 } else {
                     $_SESSION['error'] = "มีบางอย่างผิดพลาด";
-                    header("location: admin_manageEmp.php");
+        
                 }
 
             } catch (PDOException $e) {
                 echo $e->getMessage();
             }
+        }  else {
+            $_SESSION['error'] = "เบอร์โทรศัพท์ไม่ถูกต้อง";
         }
     }
 
@@ -347,30 +349,6 @@
                             <!-- Modal body -->
                             <div class="modal-body">
                                 <form action="" method="POST" class="form-horizontal" enctype="multipart/form-data">
-                                    <?php if (isset($_SESSION['error'])) { ?>
-                                        <div class="alert alert-danger" role="alert">
-                                            <?php
-                                            echo $_SESSION['error'];
-                                            unset($_SESSION['error']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['success'])) { ?>
-                                        <div class="alert alert-success" role="alert">
-                                            <?php
-                                            echo $_SESSION['success'];
-                                            unset($_SESSION['success']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if (isset($_SESSION['warning'])) { ?>
-                                        <div class="alert alert-warning" role="alert">
-                                            <?php
-                                            echo $_SESSION['warning'];
-                                            unset($_SESSION['warning']);
-                                            ?>
-                                        </div>
-                                    <?php } ?>
                                     <div class="mb-3">
                                         <label for="username" class="form-label">Username</label>
                                         <input type="text" class="form-control" name="username" aria-describebdy="username">
@@ -442,6 +420,22 @@
                     <h1 class="h2">รายชื่อพนักงาน
                         <a href="" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">เพิ่มข้อมูล <i data-feather="plus"></i></a>
                     </h1>
+                    <?php if (isset($_SESSION['error'])) { ?>
+                                        <div class="alert alert-danger" role="alert">
+                                            <?php
+                                            echo $_SESSION['error'];
+                                            unset($_SESSION['error']);
+                                            ?>
+                                        </div>
+                    <?php } ?>
+                    <?php if (isset($_SESSION['success'])) { ?>
+                                        <div class="alert alert-success" role="alert">
+                                            <?php
+                                            echo $_SESSION['success'];
+                                            unset($_SESSION['success']);
+                                            ?>
+                                        </div>
+                    <?php } ?>
                     <div class="row">
                         <div class="col-12 col-xl-20 mb-4 mb-lg-0">
                             <div class="card">

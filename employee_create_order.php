@@ -118,7 +118,8 @@
                     $stmt2->bindParam(":orders_num", $orders_num);
                     $stmt2->bindParam(":emp_id", $emp_id);
                     $stmt2->execute();
-                    unset($_SESSION["cart_item"]);      
+                    unset($_SESSION["cart_item"]);
+                    $_SESSION['success'] = 'ทำรายการเสร็จเรียบร้อย';     
 
                 } elseif ($count > 1 && $count != 0) {
                     for($i = 0; $i < $count; $i++){
@@ -170,7 +171,8 @@
                     $stmt2->bindParam(":description", $description);
                     $stmt2->bindParam(":orders_num", $orders_num);
                     $stmt2->execute();
-                    unset($_SESSION["cart_item"]);                
+                    unset($_SESSION["cart_item"]); 
+                    $_SESSION['success'] = 'ทำรายการเสร็จเรียบร้อย';                
                 }
             break;
             case "remove";
@@ -382,6 +384,14 @@
                 <div class="container-fluid shadow p-2">
                     <center><h2>รายการสั่งซื้อสินค้า</h2></center>
                 </div>
+                <?php if (isset($_SESSION['success'])) { ?>
+                                        <div class="alert alert-success" role="alert">
+                                            <?php
+                                            echo $_SESSION['success'];
+                                            unset($_SESSION['success']);
+                                            ?>
+                                        </div>
+                <?php } ?>
                 <div class="d-flex">
                     <div style="height:600px;overflow-y: scroll;" class="shadow-sm col-6 p-3">
                         <div><center><h4>รายการสินค้า</h4></center>
