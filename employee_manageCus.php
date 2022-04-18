@@ -50,12 +50,14 @@
             $_SESSION['error'] = 'กรุณากรอกที่อยู่';
         }  else if(empty($phone)) {
             $_SESSION['error'] = 'กรุณากรอกเบอรโทรศัพท์';
+        } else if (empty($email)) {
+            $_SESSION['error'] = 'กรุณากรอกอีเมล';
         } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['error'] = 'รูปแบบอีเมลไม่ถูกต้อง';
         } else if(empty($phone)) {
             $_SESSION['error'] = 'กรุณากรอกเบอรโทรศัพท์';
-        } else if (empty($email)) {
-            $_SESSION['error'] = 'กรุณากรอกอีเมล';
+        } else if (empty($birthday)) {
+            $_SESSION['error'] = 'กรุณาเลือกวันเกิด';
         } else if (preg_match("/^[0-9]{10}$/", $phone)) {
             try {
                 $stmt = $conn->prepare("INSERT INTO customers(firstname, lastname, address, phone, email, birthday) 

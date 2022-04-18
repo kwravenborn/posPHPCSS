@@ -19,6 +19,120 @@ if ($rowuserdata['urole'] != 'Admin') {
     header('location: index.php');
 }
 
+date_default_timezone_set("Asia/Bangkok");
+$year = date("Y");
+
+$jan = "01";
+$order_jan = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$jan' AND year(date) = '$year' ");
+$order_jan->execute();
+$totaljan = 0;
+while($row = $order_jan->fetch(PDO::FETCH_ASSOC)) {
+    $totaljan = $totaljan + $row['total'];
+}
+
+$feb = "02";
+$order_feb = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$feb' AND year(date) = '$year' ");
+$order_feb->execute();
+$totalfeb = 0;
+while($row = $order_feb->fetch(PDO::FETCH_ASSOC)) {
+    $totalfeb = $totalfeb + $row['total'];
+}
+
+$mar = "03";
+$order_mar = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$mar' AND year(date) = '$year' ");
+$order_mar->execute();
+$totalmar = 0;
+while($row = $order_mar->fetch(PDO::FETCH_ASSOC)) {
+    $totalmar = $totalmar + $row['total'];
+}
+
+$apr = "04";
+$order_apr = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$apr' AND year(date) = '$year' ");
+$order_apr->execute();
+$totalapr = 0;
+while($row = $order_apr->fetch(PDO::FETCH_ASSOC)) {
+    $totalapr = $totalapr + $row['total'];
+}
+
+$may = "05";
+$order_may = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$may' AND year(date) = '$year' ");
+$order_may->execute();
+$totalmay = 0;
+while($row = $order_may->fetch(PDO::FETCH_ASSOC)) {
+    $totalmay = $totalmay + $row['total'];
+}
+
+$jun = "06";
+$order_jun = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$jun' AND year(date) = '$year' ");
+$order_jun->execute();
+$totaljun = 0;
+while($row = $order_jun->fetch(PDO::FETCH_ASSOC)) {
+    $totaljun = $totaljun + $row['total'];
+}
+
+$jul = "07";
+$order_jul = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$jul' AND year(date) = '$year' ");
+$order_jul->execute();
+$totaljul = 0;
+while($row = $order_jul->fetch(PDO::FETCH_ASSOC)) {
+    $totaljul = $totaljul + $row['total'];
+}
+
+$aug = "08";
+$order_aug = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$aug' AND year(date) = '$year' ");
+$order_aug->execute();
+$totalaug = 0;
+while($row = $order_aug->fetch(PDO::FETCH_ASSOC)) {
+    $totalaug = $totalaug + $row['total'];
+}
+
+$sep = "09";
+$order_sep = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$sep' AND year(date) = '$year' ");
+$order_sep->execute();
+$totalsep = 0;
+while($row = $order_sep->fetch(PDO::FETCH_ASSOC)) {
+    $totalsep = $totalsep + $row['total'];
+}
+
+$oct = "10";
+$order_oct = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$oct' AND year(date) = '$year' ");
+$order_oct->execute();
+$totaloct = 0;
+while($row = $order_oct->fetch(PDO::FETCH_ASSOC)) {
+    $totaloct = $totaloct + $row['total'];
+}
+
+$nov = "11";
+$order_nov = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$nov' AND year(date) = '$year' ");
+$order_nov->execute();
+$totalnov = 0;
+while($row = $order_nov->fetch(PDO::FETCH_ASSOC)) {
+    $totalnov = $totalnov + $row['total'];
+}
+
+$dec = "12";
+$order_dec = $conn->prepare("SELECT date,total FROM orders WHERE month(date) = '$dec' AND year(date) = '$year' ");
+$order_dec->execute();
+$totaldec = 0;
+while($row = $order_dec->fetch(PDO::FETCH_ASSOC)) {
+    $totaldec = $totaldec + $row['total'];
+}
+
+$dataPoints1 = array(
+	array("label"=> "Jan", "y"=> $totaljan),
+	array("label"=> "Feb", "y"=> $totalfeb),
+	array("label"=> "Mar", "y"=> $totalmar),
+	array("label"=> "Apr", "y"=> $totalapr),
+	array("label"=> "May", "y"=> $totalmay),
+	array("label"=> "Jun", "y"=> $totaljun),
+	array("label"=> "Jul", "y"=> $totaljul),
+	array("label"=> "Aug", "y"=> $totalaug),
+	array("label"=> "Sep", "y"=> $totalsep),
+	array("label"=> "Oct", "y"=> $totaloct),
+	array("label"=> "Nov", "y"=> $totalnov),
+	array("label"=> "Dec", "y"=> $totaldec),
+);
+
 ?>
 
 <!DOCTYPE html>
@@ -309,7 +423,7 @@ if ($rowuserdata['urole'] != 'Admin') {
                                             ?></div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-user fa-2x text-gray-300"></i>
+                                            <i class="fas fa-user-tie fa-2x text-gray-300"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -516,7 +630,79 @@ if ($rowuserdata['urole'] != 'Admin') {
                             </div>
 
                             <!-- Color System -->
-                            
+                            <div class="row">
+        <div class="col-lg-6 mb-4">
+            <a href="admin_manageEmp.php">
+                <div class="card bg-primary text-white shadow">
+                    <div class="card-body" style="text-align: center;">
+                        ข้อมูลพนักงาน    <i class="fas fa-user-tie fa-2x text-gray-250 col-auto"></i>                  
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <a href="admin_manageCus.php">
+                <div class="card bg-success text-white shadow">
+                    <div class="card-body" style="text-align: center;">
+                        ข้อมูลลูกค้า   <i class="fas fa-users fa-2x text-gray-250 col-auto"></i>                  
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <a href="admin_product.php">
+                <div class="card bg-info text-white shadow">
+                    <div class="card-body" style="text-align: center;">
+                        ข้อมูลสินค้า   <i class="fas fa-box fa-2x text-gray-250 col-auto"></i>                  
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <a href="admin_stock.php">
+                <div class="card bg-warning text-black shadow">
+                    <div class="card-body" style="text-align: center;">
+                        ข้อมูลสต็อกสินค้า   <i class="fas fa-box-open fa-2x text-gray-250 col-auto"></i>                  
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <a href="admin_order.php">
+                <div class="card bg-light text-black shadow">
+                    <div class="card-body" style="text-align: center;">
+                        ข้อมูลการขายสินค้า   <i class="fas fa-clipboard-list fa-2x text-black-250 col-auto"></i>                  
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <a href="admin_profile.php">
+                <div class="card bg-secondary text-white shadow">
+                    <div class="card-body" style="text-align: center;">
+                        Profile   <i class="fas fa-user fa-2x text-gray-250 col-auto"></i>                  
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</div>
+<div class="col-lg-6 mb-4">
+
+    <!-- Illustrations -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">ยอดการขายต่อเดือน ปี <?php echo " ".date("Y");?></h6>
+        </div>
+        <div class="card-body">
+            <div id="chartContainer" style="height: 370px; width: 100%;"></div>
+         </div>
+    </div>
+
+
+        
+</div>
 
                     
                     </div>
@@ -585,5 +771,49 @@ if ($rowuserdata['urole'] != 'Admin') {
     <script src="js/demo/chart-pie-demo.js"></script>
 
 </body>
-
+<script>
+window.onload = function () {
+ 
+ var chart = new CanvasJS.Chart("chartContainer", {
+     title: {
+         text: ""
+     },
+     theme: "light2",
+     animationEnabled: true,
+     toolTip:{
+         shared: true,
+         reversed: true
+     },
+     axisY: {
+         title: "",
+         suffix: " บาท"
+     },
+     legend: {
+         cursor: "pointer",
+         itemclick: toggleDataSeries
+     },
+     data: [
+         {
+             type: "stackedColumn",
+             name: "รายได้",            
+             yValueFormatString: "#,##0 บาท",
+             dataPoints: <?php echo json_encode($dataPoints1, JSON_NUMERIC_CHECK); ?>
+         }
+     ]
+ });
+  
+ chart.render();
+  
+ function toggleDataSeries(e) {
+     if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+         e.dataSeries.visible = false;
+     } else {
+         e.dataSeries.visible = true;
+     }
+     e.chart.render();
+ }
+  
+ }
+</script>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 </html>
