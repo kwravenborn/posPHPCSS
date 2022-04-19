@@ -130,7 +130,6 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-
             <!-- Nav Item - Order -->
             <li class="nav-item">
                 <a class="nav-link" href="employee_create_order.php">
@@ -145,21 +144,17 @@
                     <span>ข้อมูลลูกค้า</span></a>
             </li> 
 
-            <!-- Nav Item - Product -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities" aria-expanded="true" aria-controls="collapseUtilities">
+                <a class="nav-link" href="employee_product.php">
                     <i class="fas fa-fw fa-box"></i>
-                    <span>ข้อมูลสินค้า</span>
-                </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">จัดการข้อมูลสินค้า</h6>
-                        <a class="collapse-item" href="employee_product.php">ข้อมูลสินค้า</a>
-                        <a class="collapse-item" href="employee_stock.php">ข้อมูลสต็อกสินค้า</a>
-                        <a class="collapse-item" href="">ข้อมูลการขาย</a>
-                    </div>
-                </div>
-            </li>
+                    <span>ข้อมูลสินค้า</span></a>
+            </li> 
+
+            <li class="nav-item">
+                <a class="nav-link" href="employee_order.php">
+                    <i class="fas fa-fw fa-clipboard-list"></i>
+                    <span>ข้อมูลรายการขายสินค้า</span></a>
+            </li> 
 
             <!-- Divider -->
             <hr class="sidebar-divider">
