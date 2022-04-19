@@ -33,7 +33,7 @@
                                 $_SESSION['employee_login'] = $row['id'];
                                 $_SESSION["firstname"] = $row["firstname"];
                                 $_SESSION["lastname"] = $row["lastname"];
-                                header("location: employee.php");
+                                header("location: employee_create_order.php");
                             }
                         } else {
                             $_SESSION['error'] = 'password ไม่ถูกต้อง';

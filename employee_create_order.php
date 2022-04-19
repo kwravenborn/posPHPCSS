@@ -16,10 +16,16 @@
     $rowuserdata = $userdata->fetch(PDO::FETCH_ASSOC);
 
     $cus_id = 0;
+    $datacusname = "";
     if(isset($_GET['cus_id'])) {
         $cus_id = $_GET["cus_id"];
+        $cusdata = $conn->prepare("SELECT * FROM customers WHERE id = '$cus_id'");
+        $cusdata->execute();
+        $rowcusdata = $cusdata->fetch(PDO::FETCH_ASSOC);
+        $datacusname = $rowcusdata['firstname']." ".$rowcusdata['lastname'];
+        
     }
-    
+ 
     if ($rowuserdata['urole'] != 'Employee') {
         unset($_SESSION['user_login']);
         unset($_SESSION['admin_login']);
@@ -34,11 +40,17 @@
             case "add";
                 if(!empty($_POST["quantity"])) {
                     $productById = $db_handle->runQuery("SELECT * FROM products WHERE id ='" . $_GET["id"]. "'");
-                    $itemArray = array($productById[0]["id"]=>(array('name'=>$productById[0]["name"],
+                    if($_POST['quantity'] > $productById[0]['amount']){
+                        $_SESSION['amount'] = "จำนวนสินค้าคงเหลือไม่เพียงพอ";
+                        break;
+                    } else {
+                        $itemArray = array($productById[0]["id"]=>(array('name'=>$productById[0]["name"],
                                                                         'id'=>$productById[0]["id"],
                                                                         'quantity'=>$_POST["quantity"],
                                                                         'price'=>$productById[0]["price"],
                                                                         'image'=>$productById[0]["image"])));
+                    }
+
                 }
 
                 if(!empty($_SESSION["cart_item"])) {
@@ -61,9 +73,15 @@
             case "sale";
                 $ctitem = array($_SESSION["cart_item"]);
                 $count = 0;
-                $orders_num = rand(0,9999)."2222".rand(0,99999);
-                $emp_id = $rowuserdata['id'];
+                $empname = $rowuserdata['firstname']." ".$rowuserdata['lastname'];
                 $cus_id = $_GET['id'];
+                $cusdata = $conn->prepare("SELECT * FROM customers WHERE id = '$cus_id'");
+                $cusdata->execute();
+                $rowcusdata = $cusdata->fetch(PDO::FETCH_ASSOC);
+                $cusname = $rowcusdata['firstname']." ".$rowcusdata['lastname'];
+                $cusphone = $rowcusdata['phone'];
+                $cusadd = $rowcusdata['address'];
+                $cusemail = $rowcusdata['email'];
 
                 $totalPrice = 0;
                 $description = "";
@@ -85,7 +103,6 @@
                     $totalPrice = $totalPrice + $ttprice;
                     $description = $item['name']." (".$item['quantity'].")";
 
-
                     $data_product = $conn->prepare("SELECT * FROM products WHERE name = '$name'");
                     $data_product->execute();
                     $datapd = $data_product->fetch(PDO::FETCH_ASSOC);
@@ -100,23 +117,24 @@
                     $up_stmt->bindParam(":name", $name);
                     $up_stmt->execute();
 
-                    $stmt = $conn->prepare("INSERT INTO order_detail(name, qty, price, cus_id, emp_id, image, orders_num) 
-                    VALUES(:name, :qty, :price, :cus_id, :emp_id, :image, :orders_num)");
+                    $stmt = $conn->prepare("INSERT INTO order_detail(name, qty, price, cusname, empname, image) 
+                    VALUES(:name, :qty, :price, :cusname, :empname, :image)");
                     $stmt->bindParam(":name", $name);
                     $stmt->bindParam(":qty", $qty);
                     $stmt->bindParam(":price", $ttprice);
-                    $stmt->bindParam(":cus_id", $cus_id);
-                    $stmt->bindParam(":emp_id", $emp_id);
+                    $stmt->bindParam(":cusname", $cusname);
+                    $stmt->bindParam(":empname", $empname);
                     $stmt->bindParam(":image", $image);
-                    $stmt->bindParam(":orders_num", $orders_num);
                     $stmt->execute();
 
-                    $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num, emp_id) VALUES(:cus_id, :description, :total, :orders_num, :emp_id)");
-                    $stmt2->bindParam(":cus_id", $cus_id);
+                    $stmt2 = $conn->prepare("INSERT INTO orders(cusname, description, total, empname,phone , address, email) VALUES(:cusname, :description, :total, :empname,:phone,:address,:email)");
+                    $stmt2->bindParam(":cusname", $cusname);
                     $stmt2->bindParam(":total", $totalPrice);
                     $stmt2->bindParam(":description", $description);
-                    $stmt2->bindParam(":orders_num", $orders_num);
-                    $stmt2->bindParam(":emp_id", $emp_id);
+                    $stmt2->bindParam(":empname", $empname);
+                    $stmt2->bindParam(":phone", $cusphone);
+                    $stmt2->bindParam(":address", $cusadd);
+                    $stmt2->bindParam(":email", $cusemail);
                     $stmt2->execute();
                     unset($_SESSION["cart_item"]);
                     $_SESSION['success'] = 'ทำรายการเสร็จเรียบร้อย';     
@@ -152,24 +170,23 @@
                         $up_stmt->bindParam(":name", $name);
                         $up_stmt->execute();
         
-                        $stmt = $conn->prepare("INSERT INTO order_detail(name, qty, price, cus_id, emp_id, image, orders_num) 
-                        VALUES(:name, :qty, :price, :cus_id, :emp_id, :image, :orders_num)");
+                        $stmt = $conn->prepare("INSERT INTO order_detail(name, qty, price, cusname, empname, image) 
+                        VALUES(:name, :qty, :price, :cusname, :empname, :image)");
                         $stmt->bindParam(":name", $name);
                         $stmt->bindParam(":qty", $qty);
                         $stmt->bindParam(":price", $ttprice);
-                        $stmt->bindParam(":cus_id", $cus_id);
-                        $stmt->bindParam(":emp_id", $emp_id);
+                        $stmt->bindParam(":cusname", $cusname);
+                        $stmt->bindParam(":empname", $empname);
                         $stmt->bindParam(":image", $image);
-                        $stmt->bindParam(":orders_num", $orders_num);
                         $stmt->execute();
         
                     }    
                         
-                    $stmt2 = $conn->prepare("INSERT INTO orders(cus_id, description, total, orders_num) VALUES(:cus_id, :description, :total, :orders_num)");
-                    $stmt2->bindParam(":cus_id", $cus_id);
+                    $stmt2 = $conn->prepare("INSERT INTO orders(cusname, description, total, empname) VALUES(:cusname, :description, :total, :empname)");
+                    $stmt2->bindParam(":cusname", $cusname);
+                    $stmt2->bindParam(":empname", $empname);
                     $stmt2->bindParam(":total", $totalPrice);
                     $stmt2->bindParam(":description", $description);
-                    $stmt2->bindParam(":orders_num", $orders_num);
                     $stmt2->execute();
                     unset($_SESSION["cart_item"]); 
                     $_SESSION['success'] = 'ทำรายการเสร็จเรียบร้อย';                
@@ -243,7 +260,7 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee_create_order.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
@@ -253,12 +270,6 @@
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" href="Employee.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
-            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
@@ -364,10 +375,6 @@
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="employee_profile.php">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="index.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -384,6 +391,14 @@
                 <div class="container-fluid shadow p-2">
                     <center><h2>รายการสั่งซื้อสินค้า</h2></center>
                 </div>
+                <?php if (isset($_SESSION['amount'])) { ?>
+                                        <div class="alert alert-danger" role="alert">
+                                            <?php
+                                            echo $_SESSION['amount'];
+                                            unset($_SESSION['amount']);
+                                            ?>
+                                        </div>
+                <?php } ?>
                 <?php if (isset($_SESSION['success'])) { ?>
                                         <div class="alert alert-success" role="alert">
                                             <?php
@@ -668,7 +683,15 @@
                                 echo("<tr>");
                                 echo("</tr>");
                                 echo("<tr>");
-                                echo("<td colspan='3' class='text-right'><b>ราคารวม</b></td>");
+                                echo("<td colspan='3' class='text-right'><b>ราคารวม :</b></td>");
+                                echo("<td class='text-right'>" .number_format($total_price*100/107,2)."</td>");
+                                echo("</tr>");
+                                echo("<tr>");
+                                echo("<td colspan='3' class='text-right'><b>VAT 7% :</b></td>");
+                                echo("<td class='text-right'>" .number_format(($total_price - ($total_price*100/107)),2)."</td>");
+                                echo("</tr>");
+                                echo("<tr>");
+                                echo("<td colspan='3' class='text-right'><b>ราคารวมสุทธิ :</b></td>");
                                 echo("<td class='text-right'><b>" .number_format($total_price,2)."</b></td>");
                                 echo("</tr>");
                                 ?>

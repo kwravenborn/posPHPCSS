@@ -28,8 +28,8 @@
             $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
             extract($row);
     
-            $order_detail = $conn->prepare('SELECT * FROM oder_detail WHERE orders_num = :ordes_num');
-            $order_detail->bindParam(':ordes_num', $row['orders_num']);
+            $order_detail = $conn->prepare('SELECT * FROM oder_detail WHERE date = :date');
+            $order_detail->bindParam(':date', $row['date']);
             $order_detail->execute();
             $orderDT = $order_detail->fetch(PDO::FETCH_ASSOC);
             extract($orderDT);
@@ -71,7 +71,7 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee_create_order.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
@@ -81,12 +81,6 @@
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" href="Employee.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
-            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
@@ -195,10 +189,6 @@
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="employee_profile.php">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="index.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -216,21 +206,14 @@
                     
                     
 
-                    <h2>ข้อมูลรายการสั่งซื้อ เลขที่ใบเสร็จ <?php echo $row['orders_num'];?></h2>
+                    <h2>ข้อมูลรายการสั่งซื้อ เลขที่ใบเสร็จ <?php echo $row['id'];?></h2>
                     <div class="table-wrapper">
                         <table class="fl-table">
                             
                             <thead>
                             <tr>
                                 <th>ชื่อลูกค้า</th>
-                                <td><?php 
-                                    $check_cus = $conn->prepare("SELECT * FROM customers WHERE id = $row[cus_id]");
-                                    $check_cus->execute();
-                                    $r = $check_cus->fetch(PDO::FETCH_ASSOC);
-                                    $cus_name = $r['firstname']." ".$r['lastname'];
-
-                                    echo $cus_name;                                
-                                ?></td>
+                                <td><?php echo $row['cusname'];?></td>
                                 <th>วันที่</th>
                                 <td><?php echo $row['date'];?></td>
                             </tr>
@@ -250,8 +233,8 @@
                             $select_stmt->execute();
 
                             
-                            $order_detail = $conn->prepare('SELECT * FROM order_detail WHERE orders_num = :ordes_num');
-                            $order_detail->bindParam(':ordes_num', $row['orders_num']);
+                            $order_detail = $conn->prepare('SELECT * FROM order_detail WHERE date = :date');
+                            $order_detail->bindParam(':date', $row['date']);
                             $order_detail->execute();
                                
 
@@ -271,8 +254,7 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td style="text-align: right">ราคารวม</td>
-                                <td style="text-align: right"><?php
+                            <?php
                                 if (isset($_REQUEST['view_id'])) {
                                     try {
                                         $id = $_REQUEST['view_id'];
@@ -286,7 +268,19 @@
                                         $e->getMessage();
                                     }
                                 }
-                                 echo number_format($row['total'],2)?></td>
+                                
+                                echo("<td style='text-align: right'><b>ราคารวม :</b></td>");
+                                echo("<td class='text-right'>" .number_format($row['total']*100/107,2)."</td>");
+                                echo("</tr>");
+                                echo("<tr>");
+                                echo("<td colspan='4' class='text-right'><b>VAT 7% :</b></td>");
+                                echo("<td class='text-right'>" .number_format(($row['total'] - ($row['total']*100/107)),2)."</td>");
+                                echo("</tr>");
+                                echo("<tr>");
+                                echo("<td colspan='4' class='text-right'><b>ราคารวมสุทธิ :</b></td>");
+                                echo("<td class='text-right'><b>" .number_format($row['total'],2)."</b></td>");
+                                echo("</tr>");
+                                ?>
                             </tr>
                             <tbody>
                         </table>
@@ -368,49 +362,37 @@
 		</div>
 	
 		<div class="invoice-details">
-            เลขที่ใบเสร็จ : <?php echo $row['orders_num'];?>
+            เลขที่ใบเสร็จ : <?php echo $row['id'];?>
             <br>
 			วันที่ : <?php
-            $order_detail = $conn->prepare('SELECT date FROM order_detail WHERE orders_num = :ordes_num');
-            $order_detail->bindParam(':ordes_num', $row['orders_num']);
+            $order_detail = $conn->prepare('SELECT * FROM order_detail WHERE date = :date');
+            $order_detail->bindParam(':date', $row['date']);
             $order_detail->execute();
             $roworder = $order_detail->fetch(PDO::FETCH_ASSOC);
-
-            $empid = $conn->prepare('SELECT emp_id FROM order_detail WHERE orders_num = :orders_num');
-            $empid->bindParam(':orders_num', $row['orders_num']);
-            $empid->execute();
-            $empid = $empid->fetch(PDO::FETCH_ASSOC);
-            $emp_data = $conn->prepare('SELECT * FROM users WHERE id = :empid');
-            $emp_data->bindParam(':empid', $empid['emp_id']);
-            $emp_data->execute();
-            $empdata = $emp_data->fetch(PDO::FETCH_ASSOC);
 
             date_default_timezone_set("Asia/Bangkok");
              echo date("Y-m-d", strtotime($roworder['date']));
              echo "<br>";
-             echo "เวลา : ".date("h:i:s a", strtotime($roworder['date'])); ?>
-             <br>
-             พนักงานขาย : <?php echo $empdata['firstname']." ".$empdata['lastname'];?>
+             echo "เวลา : ".date("h:i:s a", strtotime($roworder['date']));
+             echo "<br>";
+             echo "พนักงานขาย : ".$roworder['empname'];
+             ?>
 		</div>
 		
 		<div class="customer-address">
 			ชื่อลูกค้า : <?php 
-            $cusid = $conn->prepare('SELECT cus_id FROM order_detail WHERE orders_num = :orders_num');
-            $cusid->bindParam(':orders_num', $row['orders_num']);
-            $cusid->execute();
-            $cusid = $cusid->fetch(PDO::FETCH_ASSOC);
+            $cus = $conn->prepare('SELECT * FROM orders WHERE date = :date');
+            $cus->bindParam(':date', $row['date']);
+            $cus->execute();
+            $cus = $cus->fetch(PDO::FETCH_ASSOC);
 
-            $cusid_data = $conn->prepare('SELECT * FROM customers WHERE id = :cusid');
-            $cusid_data->bindParam(':cusid', $cusid['cus_id']);
-            $cusid_data->execute();
-            $cusdata = $cusid_data->fetch(PDO::FETCH_ASSOC);
-            echo $cusdata['firstname']." ".$cusdata['lastname'];
+            echo $cus['cusname'];
 			echo "<br>";
-            echo "เบอร์โทรศัพท์ : ".$cusdata['phone'];
+            echo "เบอร์โทรศัพท์ : ".$cus['phone'];
             echo "<br>";
-            echo "ที่อยู่ : ".$cusdata['address']; 
+            echo "ที่อยู่ : ".$cus['address']; 
             echo "<br>";
-            echo "อีเมล : ".$cusdata['email'];
+            echo "อีเมล : ".$cus['email'];
             ?>
 			
 		</div>
@@ -425,8 +407,8 @@
 				</tr>
 
 			<?php	
-            $order_detail = $conn->prepare('SELECT * FROM order_detail WHERE orders_num = :ordes_num');
-            $order_detail->bindParam(':ordes_num', $row['orders_num']);
+            $order_detail = $conn->prepare('SELECT * FROM order_detail WHERE date = :date');
+            $order_detail->bindParam(':date', $row['date']);
             $order_detail->execute();
             $total_price = 0;		
 			foreach($order_detail as $item) {
@@ -444,12 +426,20 @@
             }
             
 
-			echo("<tr>");
-			echo("</tr>");
-			echo("<tr>");
-			echo("<td colspan='3' class='text-right'><b>ราคารวม</b></td>");
-			echo("<td class='text-right'><b>" .number_format($total_price,2)."</b></td>");
-			echo("</tr>");
+            echo("<tr>");
+            echo("</tr>");
+            echo("<tr>");
+            echo("<td colspan='3' class='text-right'><b>ราคารวม :</b></td>");
+            echo("<td class='text-right'>" .number_format($total_price*100/107,2)."</td>");
+            echo("</tr>");
+            echo("<tr>");
+            echo("<td colspan='3' class='text-right'><b>VAT 7% :</b></td>");
+            echo("<td class='text-right'>" .number_format(($total_price - ($total_price*100/107)),2)."</td>");
+            echo("</tr>");
+            echo("<tr>");
+            echo("<td colspan='3' class='text-right'><b>ราคารวมสุทธิ :</b></td>");
+            echo("<td class='text-right'><b>" .number_format($total_price,2)."</b></td>");
+            echo("</tr>");
 			?>
 			</table>
 		</div>                       

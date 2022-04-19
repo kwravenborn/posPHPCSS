@@ -71,7 +71,7 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee_create_order.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
@@ -81,12 +81,6 @@
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" href="Employee.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
-            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
@@ -198,10 +192,6 @@
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="employee_profile.php">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="index.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -247,7 +237,7 @@
 
                                                         $srh = $_POST['srh'];
 
-                                                        $check_data = $conn->prepare("SELECT * FROM orders WHERE orders_num = '$srh' OR cus_id = '$srh' OR total = '$srh' ORDER BY date DESC");
+                                                        $check_data = $conn->prepare("SELECT * FROM orders WHERE orders_num = '$srh' OR cusname = '$srh' OR total = '$srh' ORDER BY date DESC");
                                                         $check_data->execute();
                                                     } else {
                                                         $check_data = $conn->prepare("SELECT * FROM orders ORDER BY date DESC");
@@ -261,19 +251,12 @@
                                                 ?>
                                                     <form action="admin_user.php" method="POST">
                                                         <tr>
-                                                            <td style="text-align: center"><?php echo $row['orders_num'];?></td>
+                                                            <td style="text-align: center"><?php echo $row['id'];?></td>
                                                             <td style="text-align: center"><?php echo $row['date'];?></td>
-                                                            <td style="text-align: center"><?php 
-                                                            $check_cus = $conn->prepare("SELECT * FROM customers WHERE id = $row[cus_id]");
-                                                            $check_cus->execute();
-                                                            $r = $check_cus->fetch(PDO::FETCH_ASSOC);
-                                                            $cus_name = $r['firstname']." ".$r['lastname'];
-
-                                                            echo $cus_name;?></td>
+                                                            <td style="text-align: center"><?php echo $row['cusname'];?></td>
                                                             <td style="text-align: center"><?php echo iconv_substr($row['description'],0,30,'UTF-8')."...";?></td>
                                                             <td style="text-align: center"><?php echo number_format($row['total'],2);?></td>
                                                             <td><a href="employee_order_detail.php?view_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-success">View</a></td>
-                                                            <td><a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
                                                         </tr>
                                                     </form>
                                                 <?php } ?>

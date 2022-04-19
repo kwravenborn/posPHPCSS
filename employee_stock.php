@@ -19,21 +19,6 @@
         header('location: index.php');
     }
     
-    if (isset($_REQUEST['delete_id'])) {
-        $id = $_REQUEST['delete_id'];
-
-        $select_stmt = $conn->prepare('SELECT * FROM stockpd WHERE id = :id');
-        $select_stmt->bindParam(':id', $id);
-        $select_stmt->execute();
-        $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
-        unlink("upload/".$row['image']);
-        
-        $delete_stmt = $conn->prepare('DELETE FROM stockpd WHERE id = :id');
-        $delete_stmt->bindParam(':id', $id);
-        $delete_stmt->execute();
-
-        header("location: employee_stock.php");
-    }
     
 
 ?>
@@ -68,7 +53,7 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="employee_create_order.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
@@ -78,12 +63,6 @@
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" href="Employee.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
-            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
@@ -195,10 +174,6 @@
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="employee_profile.php">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="index.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -258,7 +233,6 @@
                                                             <td style="text-align: center"><?php echo $row['name']; ?></td>
                                                             <td style="text-align: center"><?php echo $row['amount']; ?></td> 
                                                             <td style="text-align: center"><?php echo $row['emp_name']; ?></td>                
-                                                            <td><a href="employee_stock.php?delete_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger">Delete</a></td>
                                                         </tr>
                                                     </form>
                                                 <?php } ?>

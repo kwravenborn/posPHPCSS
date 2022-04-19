@@ -290,10 +290,6 @@ $dataPoints1 = array(
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="admin_profile.php">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="index.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -468,7 +464,7 @@ $dataPoints1 = array(
                                                         $srh = $_POST['srh'];
                                                         date_default_timezone_set("Asia/Bangkok");
                                                         $datetd = date("Y-m-d");                                                       
-                                                        $check_data = $conn->prepare("SELECT * FROM orders WHERE orders_num = '$srh' OR cus_id = '$srh' OR total = '$srh' 
+                                                        $check_data = $conn->prepare("SELECT * FROM orders WHERE orders_num = '$srh' OR cusname = '$srh' OR total = '$srh' 
                                                         AND date(date) = '$datetd' ORDER BY date DESC");
                                                         $check_data->execute();
                                                     } else {
@@ -485,15 +481,9 @@ $dataPoints1 = array(
                                                 ?>
                                                     <form action="" method="POST">
                                                         <tr>
-                                                            <td style="text-align: center"><?php echo $row['orders_num'];?></td>
+                                                            <td style="text-align: center"><?php echo $row['id'];?></td>
                                                             <td style="text-align: center"><?php echo $row['date'];?></td>
-                                                            <td style="text-align: center"><?php 
-                                                            $check_cus = $conn->prepare("SELECT * FROM customers WHERE id = $row[cus_id]");
-                                                            $check_cus->execute();
-                                                            $r = $check_cus->fetch(PDO::FETCH_ASSOC);
-                                                            $cus_name = $r['firstname']." ".$r['lastname'];
-
-                                                            echo $cus_name;?></td>                               
+                                                            <td style="text-align: center"><?php echo $row['cusname'];?></td>                               
                                                             <td style="text-align: center"><?php echo number_format($row['total'],2);?></td>
                                                             <td><a href="admin_order_detail.php?view_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-success">View</a></td>
                                                         </tr>
@@ -672,15 +662,6 @@ $dataPoints1 = array(
                 <div class="card bg-light text-black shadow">
                     <div class="card-body" style="text-align: center;">
                         ข้อมูลการขายสินค้า   <i class="fas fa-clipboard-list fa-2x text-black-250 col-auto"></i>                  
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-lg-6 mb-4">
-            <a href="admin_profile.php">
-                <div class="card bg-secondary text-white shadow">
-                    <div class="card-body" style="text-align: center;">
-                        Profile   <i class="fas fa-user fa-2x text-gray-250 col-auto"></i>                  
                     </div>
                 </div>
             </a>
