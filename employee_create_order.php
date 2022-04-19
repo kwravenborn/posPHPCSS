@@ -38,8 +38,8 @@
     if(!empty($_GET["action"])) {
         switch($_GET["action"]) {
             case "add";
+                $productById = $db_handle->runQuery("SELECT * FROM products WHERE id ='" . $_GET["id"]. "'");
                 if(!empty($_POST["quantity"])) {
-                    $productById = $db_handle->runQuery("SELECT * FROM products WHERE id ='" . $_GET["id"]. "'");
                     if($_POST['quantity'] > $productById[0]['amount']){
                         $_SESSION['amount'] = "จำนวนสินค้าคงเหลือไม่เพียงพอ";
                         break;
@@ -61,6 +61,11 @@
                                     $_SESSION["cart_item"][$k]["quantity"] = 0;
                                 }
                                 $_SESSION["cart_item"][$k]["quantity"] += $_POST["quantity"];
+                                if($_SESSION["cart_item"][$k]["quantity"] > $productById[0]['amount']){
+                                    $_SESSION['amount'] = "จำนวนสินค้าคงเหลือไม่เพียงพอ";
+                                    $_SESSION["cart_item"][$k]["quantity"] -= $_POST["quantity"];
+                                    break;
+                                }
                             }
                         }
                     } else {
@@ -182,14 +187,17 @@
         
                     }    
                         
-                    $stmt2 = $conn->prepare("INSERT INTO orders(cusname, description, total, empname) VALUES(:cusname, :description, :total, :empname)");
+                    $stmt2 = $conn->prepare("INSERT INTO orders(cusname, description, total, empname,phone , address, email) VALUES(:cusname, :description, :total, :empname,:phone,:address,:email)");
                     $stmt2->bindParam(":cusname", $cusname);
-                    $stmt2->bindParam(":empname", $empname);
                     $stmt2->bindParam(":total", $totalPrice);
                     $stmt2->bindParam(":description", $description);
+                    $stmt2->bindParam(":empname", $empname);
+                    $stmt2->bindParam(":phone", $cusphone);
+                    $stmt2->bindParam(":address", $cusadd);
+                    $stmt2->bindParam(":email", $cusemail);
                     $stmt2->execute();
-                    unset($_SESSION["cart_item"]); 
-                    $_SESSION['success'] = 'ทำรายการเสร็จเรียบร้อย';                
+                    unset($_SESSION["cart_item"]);
+                    $_SESSION['success'] = 'ทำรายการเสร็จเรียบร้อย';               
                 }
             break;
             case "remove";
