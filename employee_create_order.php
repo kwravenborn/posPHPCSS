@@ -469,7 +469,7 @@
                         </div>
                         <div>
                         <form action="" method="GET">
-                                <label style="color: black" for="">ลูกค้า</label>
+                                <label style="color: black" for="cus_id">ลูกค้า</label>
                                 <select name="cus_id">
                                 <option value="">--เลือกลูกค้า--</option>
                                 <?php 
@@ -478,7 +478,7 @@
                                 while ($rowcus = $data_customer->fetch(PDO::FETCH_ASSOC)) { ?>
                                 <option value="<?php echo $rowcus['id']; ?>"><?php  echo $rowcus['firstname']." ".$rowcus['lastname'];?></option>
                                 <?php  } ?>                
-                                </select>           
+                                </select>
                                 <button class="btn-xs btn-info" type="submit">+</button>
                                 <h99 style="color: red;font-size: 14px;">**กรุณากดปุ่ม + เพื่อเลือกลูกค้า**</h99>
                             </form>   
@@ -687,17 +687,18 @@
                                 echo("<tr>");
                                 echo("</tr>");
                                 echo("<tr>");
-                                echo("<td colspan='3' class='text-right'><b>ราคารวม :</b></td>");
+                                echo("<td colspan='3' class='text-right' style='font-size: 14px;'><b>ราคารวม :</b></td>");
                                 echo("<td class='text-right'>" .number_format($total_price*100/107,2)."</td>");
                                 echo("</tr>");
                                 echo("<tr>");
-                                echo("<td colspan='3' class='text-right'><b>VAT 7% :</b></td>");
+                                echo("<td colspan='3' class='text-right' style='font-size: 14px;'><b>VAT 7% :</b></td>");
                                 echo("<td class='text-right'>" .number_format(($total_price - ($total_price*100/107)),2)."</td>");
                                 echo("</tr>");
                                 echo("<tr>");
-                                echo("<td colspan='3' class='text-right'><b>ราคารวมสุทธิ :</b></td>");
+                                echo("<td colspan='3' class='text-right' style='font-size: 20px;'><b>ราคารวมสุทธิ :</b></td>");
                                 echo("<td class='text-right'><b>" .number_format($total_price,2)."</b></td>");
                                 echo("</tr>");
+                                echo("<tr>");
                                 ?>
                                 </table>
                             </div>                       
